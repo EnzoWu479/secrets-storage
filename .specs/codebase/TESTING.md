@@ -16,20 +16,20 @@
 
 ## Test Execution
 
-- Frontend: `npm run test:frontend`
-- Rust: `npm run test:rust`
-- Gate completo: `npm run check`
-- Compile smoke Tauri: `npm run tauri build -- --no-bundle`
+- Frontend: `pnpm test:frontend`
+- Rust: `pnpm test:rust`
+- Gate completo: `pnpm check`
+- Compile smoke Tauri: `pnpm tauri build --no-bundle`
 
 ## Test Coverage Matrix
 
 | Code Layer | Required Test Type | Location Pattern | Run Command |
 | --- | --- | --- | --- |
-| Componentes Vue | unit | `src/**/*.test.ts` | `npm run test:frontend` |
-| Core Rust puro | unit | `src-tauri/src/**/*.rs` | `npm run test:rust` |
+| Componentes Vue | unit | `src/**/*.test.ts` | `pnpm test:frontend` |
+| Core Rust puro | unit | `src-tauri/src/**/*.rs` | `pnpm test:rust` |
 | Comandos Tauri/IPC | integration | `src-tauri/tests/**/*.rs` | A definir antes do primeiro comando |
 | Fluxos críticos de UI | e2e | A definir | A definir antes do primeiro fluxo |
-| Configuração/build | none | arquivos de configuração | `npm run build` e compile smoke Tauri |
+| Configuração/build | none | arquivos de configuração | `pnpm build` e compile smoke Tauri |
 
 ## Parallelism Assessment
 
@@ -43,6 +43,6 @@
 
 | Gate Level | When to Use | Command |
 | --- | --- | --- |
-| Quick | Alterações somente no frontend | `npm run check:frontend` |
-| Full | Alterações frontend e Rust | `npm run check` |
-| Build | Fechamento de fase | `npm run check` seguido de `npm run tauri build -- --no-bundle` |
+| Quick | Alterações somente no frontend | `pnpm check:frontend` |
+| Full | Alterações frontend e Rust | `pnpm check` |
+| Build | Fechamento de fase | `pnpm check` seguido de `pnpm tauri build --no-bundle` |

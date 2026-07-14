@@ -2,6 +2,7 @@
   "name": "secrets-storage",
   "private": true,
   "version": "0.1.0",
+  "packageManager": "pnpm@11.13.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,9 +13,9 @@
     "format:rust": "cargo fmt --manifest-path src-tauri/Cargo.toml --check",
     "lint:rust": "cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets --all-features -- -D warnings",
     "test:rust": "cargo test --manifest-path src-tauri/Cargo.toml",
-    "check:frontend": "npm run test:frontend && npm run build",
-    "check:rust": "npm run format:rust && npm run lint:rust && npm run test:rust",
-    "check": "npm run check:frontend && npm run check:rust"
+    "check:frontend": "pnpm test:frontend && pnpm build",
+    "check:rust": "pnpm format:rust && pnpm lint:rust && pnpm test:rust",
+    "check": "pnpm check:frontend && pnpm check:rust"
   },
   "dependencies": {
     "@tauri-apps/api": "^2",

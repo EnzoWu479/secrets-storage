@@ -60,9 +60,9 @@ Consulte o [roadmap detalhado](./.specs/project/ROADMAP.md) para os critérios d
 Pré-requisitos no Windows: Node.js 24 LTS, Rust stable com target MSVC, Microsoft C++ Build Tools, Windows SDK e WebView2.
 
 ```powershell
-npm ci
-npm run check
-npm run tauri dev
+pnpm install --frozen-lockfile
+pnpm check
+pnpm tauri dev
 ```
 
 O scaffold Tauri 2, Vue 3, TypeScript e Tailwind está executável, mas contém apenas uma tela de fundação. Ainda não existe armazenamento de segredos nem implementação criptográfica.
