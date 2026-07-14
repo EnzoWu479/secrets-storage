@@ -1,0 +1,144 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    name: Build signed Windows release
+    runs-on: windows-latest
+    timeout-minutes: 45
+    environment: release
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+
+    steps:
+      - name: Checkout tagged revision
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+        with:
+          version: 11.13.0
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate tag, versions, and main ancestry
+        shell: pwsh
+        run: |
+          $tagVersion = $env:GITHUB_REF_NAME -replace '^v', ''
+          $tauriVersion = (Get-Content src-tauri/tauri.conf.json | ConvertFrom-Json).version
+          $packageVersion = (Get-Content package.json | ConvertFrom-Json).version
+          $cargo = cargo metadata --manifest-path src-tauri/Cargo.toml --no-deps --format-version 1 | ConvertFrom-Json
+          $cargoVersion = ($cargo.packages | Where-Object name -eq 'secrets-storage').version
+
+          if ($env:GITHUB_REF_NAME -notmatch '^v\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$') {
+            throw "Tag inválida: $env:GITHUB_REF_NAME"
+          }
+
+          foreach ($version in @($tauriVersion, $packageVersion, $cargoVersion)) {
+            if ($version -ne $tagVersion) {
+              throw "Versões divergentes: tag=$tagVersion tauri=$tauriVersion package=$packageVersion cargo=$cargoVersion"
+            }
+          }
+
+          git fetch origin main --no-tags
+          git merge-base --is-ancestor HEAD origin/main
+          if ($LASTEXITCODE -ne 0) {
+            throw "A tag não aponta para um commit contido em origin/main."
+          }
+
+      - name: Create release-only updater configuration
+        shell: pwsh
+        env:
+          UPDATER_PUBLIC_KEY: ${{ vars.TAURI_UPDATER_PUBLIC_KEY }}
+          SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:UPDATER_PUBLIC_KEY)) {
+            throw "A variável TAURI_UPDATER_PUBLIC_KEY não foi configurada no environment release."
+          }
+          if ([string]::IsNullOrWhiteSpace($env:SIGNING_PRIVATE_KEY)) {
+            throw "O secret TAURI_SIGNING_PRIVATE_KEY não foi configurado no environment release."
+          }
+          if ([string]::IsNullOrWhiteSpace($env:SIGNING_PRIVATE_KEY_PASSWORD)) {
+            throw "O secret TAURI_SIGNING_PRIVATE_KEY_PASSWORD não foi configurado no environment release."
+          }
+
+          $config = @{
+            bundle = @{
+              targets = @('nsis')
+              createUpdaterArtifacts = $true
+            }
+            plugins = @{
+              updater = @{
+                pubkey = $env:UPDATER_PUBLIC_KEY
+                endpoints = @('https://github.com/EnzoWu479/secrets-storage/releases/latest/download/latest.json')
+                windows = @{ installMode = 'passive' }
+              }
+            }
+          }
+          $config | ConvertTo-Json -Depth 8 | Set-Content src-tauri/tauri.release.conf.json -Encoding utf8
+
+      - name: Run quality and dependency gates
+        shell: pwsh
+        run: |
+          pnpm check
+          pnpm audit --prod --audit-level high
+
+      - name: Build updater artifacts and draft release
+        uses: tauri-apps/tauri-action@944946e3e4cac6603d1fe8f514171e9ecd3c78aa # v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: Secrets Storage ${{ github.ref_name }}
+          releaseDraft: true
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          generateReleaseNotes: true
+          uploadUpdaterJson: true
+          updaterJsonPreferNsis: true
+          tauriScript: pnpm tauri
+          args: --bundles nsis --config src-tauri/tauri.release.conf.json
+
+      - name: Generate checksums
+        id: checksums
+        shell: pwsh
+        run: |
+          $installer = Get-ChildItem src-tauri/target/release/bundle/nsis/*.exe | Select-Object -First 1
+          if ($null -eq $installer) {
+            throw "Instalador NSIS não encontrado."
+          }
+          $hash = (Get-FileHash $installer.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  $($installer.Name)" | Set-Content SHA256SUMS -Encoding ascii
+          "installer=$($installer.FullName)" >> $env:GITHUB_OUTPUT
+
+      - name: Upload checksums to draft release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload $env:GITHUB_REF_NAME SHA256SUMS --clobber
+
+      - name: Attest installer provenance
+        uses: actions/attest-build-provenance@43d14bc2b83dec42d39ecae14e916627a18bb661 # v3
+        with:
+          subject-path: ${{ steps.checksums.outputs.installer }}
