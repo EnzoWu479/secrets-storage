@@ -165,8 +165,8 @@
     "semantic_hash": ""
   },
   ".specs/project/STATE.md": {
-    "mtime": 1784038898.3882842,
-    "ast_hash": "fbde5a9841b0e7cf6c2e3137cc947df7",
+    "mtime": 1784051981.4494722,
+    "ast_hash": "c94de9f5138247531137583cc6cd48b4",
     "semantic_hash": ""
   },
   "AGENTS.md": {
@@ -180,8 +180,8 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1784038896.7492628,
-    "ast_hash": "02ae2d23c7fb5e0a657dec044663f58d",
+    "mtime": 1784051979.9781935,
+    "ast_hash": "1b8f21406c729ba2364ee05a3994e586",
     "semantic_hash": ""
   },
   ".vscode/extensions.json": {
@@ -360,8 +360,8 @@
     "semantic_hash": ""
   },
   "scripts/new-release.ps1": {
-    "mtime": 1784038976.8293178,
-    "ast_hash": "28b1e29d8e91258b7dd9012dbab7a428",
+    "mtime": 1784052015.884954,
+    "ast_hash": "8d2a21fcb624df126b78c7c86c04e083",
     "semantic_hash": ""
   }
 }
