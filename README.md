@@ -3,7 +3,7 @@
 Aplicativo desktop open source, local-first e zero-knowledge para armazenar senhas, chaves de API e outros segredos em um cofre criptografado. A proposta é sincronizar somente dados cifrados pelo OneDrive ou Google Drive escolhido pelo usuário, sem entregar ao provedor conteúdo legível ou material suficiente para descriptografá-lo.
 
 > [!IMPORTANT]
-> O projeto está em fase de planejamento. O marco atual é **M0 — Fundação de segurança**: o modelo de ameaças está em revisão e ainda não há aplicativo, binário ou fluxo de instalação disponível.
+> O projeto está no marco **M0 — Fundação de segurança**: o modelo de ameaças foi aprovado como base de design, mas os controles ainda dependem de implementação e evidência. Não há release utilizável para armazenar segredos reais.
 
 ## Princípios
 
@@ -35,7 +35,7 @@ Não fazem parte do v1: macOS, Linux, dispositivos móveis, cofres compartilhado
 | --- | --- |
 | Aplicativo desktop | Tauri 2 |
 | Core | Rust |
-| Frontend | Vite e Tailwind CSS |
+| Frontend | Vue 3, TypeScript, Vite e Tailwind CSS |
 | Autorização da nuvem | OAuth 2.0 |
 | Provedores | Microsoft Graph e Google Drive API |
 | Atualizações | Tauri Updater e GitHub Releases |
@@ -55,16 +55,40 @@ O formato do cofre, a hierarquia de chaves, as primitivas e os parâmetros cript
 
 Consulte o [roadmap detalhado](./.specs/project/ROADMAP.md) para os critérios de cada marco.
 
-## Estado do desenvolvimento
+## Desenvolvimento
 
-O repositório contém atualmente a especificação do produto, o modelo de ameaças e as políticas do projeto. O scaffold Tauri/Vite/Tailwind ainda não foi criado; por isso, comandos de instalação, build e testes serão adicionados aqui quando forem executáveis.
+Pré-requisitos no Windows: Node.js 24 LTS, Rust stable com target MSVC, Microsoft C++ Build Tools, Windows SDK e WebView2.
 
-Antes da implementação, os próximos gates são:
+```powershell
+pnpm install --frozen-lockfile
+pnpm check
+pnpm dev
+```
 
-1. revisar e aprovar o modelo de ameaças do v1;
-2. executar os protótipos de segurança que bloqueiam decisões de arquitetura;
-3. definir o formato criptográfico versionado;
-4. criar o scaffold da aplicação e a automação de CI.
+O scaffold Tauri 2, Vue 3, TypeScript e Tailwind está executável, mas contém apenas uma tela de fundação. Ainda não existe armazenamento de segredos nem implementação criptográfica.
+
+Use `pnpm dev` para executar o aplicativo via Tauri e `pnpm build` para gerar o build desktop. Os comandos do frontend são hooks internos do Tauri, não scripts públicos.
+
+## Distribuição e atualizações
+
+O workflow de release é acionado somente por uma tag `vX.Y.Z`, valida a versão nos três manifests e se o commit pertence à `main`, executa todos os gates e cria uma GitHub Release em **draft**. O pacote primário é NSIS; `latest.json` e a assinatura do updater são gerados no mesmo build.
+
+Antes da primeira release, crie no GitHub o environment protegido `release` e configure nele:
+
+- variável `TAURI_UPDATER_PUBLIC_KEY` com a chave pública completa;
+- secrets `TAURI_SIGNING_PRIVATE_KEY` e `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`;
+- proteção de deployment limitada a tags `v*` e, quando disponível, aprovação manual.
+
+Gere o par de chaves fora do repositório com `pnpm tauri signer generate`. Guarde a chave privada e seu backup em armazenamento seguro; nunca adicione a chave privada ao Git. O workflow injeta a configuração do updater apenas durante a release, deixando builds locais sem material de assinatura.
+
+O updater está registrado no core Rust e não concede capability de atualização à WebView. A interface de busca, confirmação e reinício da atualização será implementada como um fluxo Rust controlado antes da primeira distribuição pública. A assinatura Authenticode também permanece um gate obrigatório para publicação pública.
+
+Os próximos gates são:
+
+1. executar os protótipos de segurança que bloqueiam decisões de arquitetura;
+2. definir o formato criptográfico versionado;
+3. configurar o environment e as chaves de assinatura no GitHub;
+4. iniciar o cofre local somente após fechar as decisões bloqueadoras.
 
 ## Documentação
 
@@ -82,6 +106,6 @@ Contribuições devem partir de uma branch curta e entrar por pull request. Comm
 
 ## Segurança
 
-O modelo de ameaças ainda é um rascunho para revisão. Não use o projeto para armazenar segredos reais antes que a implementação, os testes de segurança e a revisão independente estejam concluídos.
+O modelo de ameaças foi aprovado como base de design, não como certificação da implementação. Não use o projeto para armazenar segredos reais antes que a implementação, os testes de segurança e a revisão independente estejam concluídos.
 
 Vulnerabilidades não devem ser publicadas em issues enquanto um canal privado de divulgação ainda não estiver documentado.

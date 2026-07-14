@@ -1,7 +1,7 @@
 # State
 
-**Last Updated:** 2026-07-13
-**Current Work:** Cofre Seguro v1 — modelo de ameaças em revisão antes do design criptográfico
+**Last Updated:** 2026-07-14
+**Current Work:** M0 — protótipos de segurança e preparação da distribuição autenticada
 
 ---
 
@@ -135,11 +135,32 @@
 **Trade-off:** O fluxo adiciona uma PR e confirmação manual por release; assinatura, smoke tests e imutabilidade tornam correções pós-publicação uma nova versão obrigatória.
 **Impact:** `tauri.conf.json` será a fonte canônica da versão; workflows validarão manifests e tags, usarão permissões mínimas e separarão assinatura Tauri, Authenticode e attestations. A configuração remota está documentada em `.specs/project/RELEASES.md`.
 
+### AD-019: Aprovação do modelo de ameaças do v1 (2026-07-14)
+
+**Decision:** O modelo de ameaças foi aprovado como base para o design e a implementação do v1, incluindo riscos residuais, limites de garantia e protótipos bloqueadores documentados.
+**Reason:** As fronteiras de confiança e os controles obrigatórios estão suficientemente definidos para orientar o scaffold e os experimentos de M0.
+**Trade-off:** A aprovação não certifica controles ainda não implementados e mantém KDF, AEAD, formato, memória protegida e checkpoints bloqueados pelos protótipos correspondentes.
+**Impact:** O projeto pode criar a fundação executável e avançar nos protótipos, mantendo os gates de release do modelo de ameaças.
+
+### AD-020: Vue 3 e TypeScript no frontend (2026-07-14)
+
+**Decision:** O frontend usará Vue 3 com TypeScript, Vite e Tailwind CSS.
+**Reason:** A combinação foi definida pelo usuário e oferece uma base tipada, componentizada e empacotada localmente para a interface Tauri.
+**Trade-off:** Vue adiciona runtime e dependências em relação a HTML/TypeScript puro, exigindo auditoria e atualização controlada.
+**Impact:** Componentes, testes e configuração do frontend devem seguir Vue 3, sem conteúdo remoto em runtime e sob CSP estrita.
+
+### AD-021: Updater controlado pelo core e configuração de release efêmera (2026-07-14)
+
+**Decision:** O Tauri Updater será registrado e orquestrado pelo core Rust, sem capability direta para a WebView. Builds de release usarão uma sobreposição de configuração gerada no GitHub Actions com a chave pública e o endpoint estável; a chave privada existirá somente no environment protegido `release`.
+**Reason:** Reduzir a superfície exposta ao frontend e impedir que material ou configuração operacional de assinatura seja exigido em builds locais.
+**Trade-off:** A interface de atualização precisará de comandos Rust estreitos e testados; releases não funcionarão até que environment, variável e secrets sejam configurados no GitHub.
+**Impact:** O bundle inicial é somente NSIS, releases nascem em draft e artefatos do updater são assinados no mesmo build da tag.
+
 ---
 
 ## Active Blockers
 
-Nenhum.
+- A primeira distribuição pública depende da configuração do environment `release`, do par de chaves do updater e da estratégia/certificado Authenticode.
 
 ## Lessons Learned
 
@@ -163,11 +184,11 @@ Nenhuma.
 
 ## Todos
 
-- [ ] Revisar e aprovar o modelo de ameaças do v1, incluindo riscos residuais e limites explícitos de garantia.
+- [x] Revisar e aprovar o modelo de ameaças do v1, incluindo riscos residuais e limites explícitos de garantia.
 - [ ] Executar os protótipos críticos definidos no modelo de ameaças antes de escolher algoritmos e parâmetros finais.
 - [ ] Definir arquitetura e formato criptográfico após aprovação do modelo de ameaças.
 - [ ] Criar/configurar o repositório remoto e aplicar rulesets de `main` e tags `v*`, squash merge, environment `release` e immutable releases.
-- [ ] Implementar os workflows de CI e release após o scaffold Tauri/Vite/Tailwind existir.
+- [x] Implementar os workflows iniciais de CI e release para Windows/NSIS e Tauri Updater.
 - [ ] Definir e contratar a estratégia de certificado Authenticode antes da primeira distribuição pública.
 
 ## Preferences

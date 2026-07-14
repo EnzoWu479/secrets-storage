@@ -2,7 +2,7 @@
 
 **Gathered:** 2026-07-13
 **Spec:** `.specs/features/secure-vault/spec.md`
-**Status:** Threat model drafted; awaiting security review
+**Status:** Threat model approved; foundation implementation started
 
 ---
 
@@ -17,7 +17,7 @@ O v1 entrega um aplicativo Windows local-first e zero-knowledge para múltiplas 
 ### Stack e direção visual
 
 - O aplicativo desktop usa Tauri 2 com core em Rust.
-- O frontend usa Vite e Tailwind CSS.
+- O frontend usa Vue 3 com TypeScript, Vite e Tailwind CSS.
 - A primeira direção visual será funcional, limpa e genérica, priorizando hierarquia, acessibilidade e validação dos fluxos de segurança.
 - Uma identidade mais única e característica será explorada posteriormente, sem bloquear a arquitetura ou a primeira implementação.
 - Dependências, assets e estilos do frontend devem ser empacotados localmente; a interface não carregará código remoto em runtime.

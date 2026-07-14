@@ -1,8 +1,10 @@
 # Modelo de Ameaças — Secrets Storage v1
 
-**Status:** Rascunho para revisão de segurança
+**Status:** Aprovado como base de design do v1
 
 **Data:** 2026-07-13
+
+**Aprovação:** 2026-07-14 — riscos residuais, limites e protótipos bloqueadores aceitos para orientar o design; a aprovação não declara os controles como implementados.
 
 **Escopo:** Windows, Tauri 2, core Rust, frontend Vite/Tailwind, múltiplas sessões locais e sincronização por OneDrive ou Google Drive
 
