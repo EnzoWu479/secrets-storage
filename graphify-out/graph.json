@@ -4,6 +4,22 @@
   "graph": {
     "hyperedges": [
       {
+        "id": "readme_security_principles",
+        "label": "Princ\u00edpios de seguran\u00e7a do Secrets Storage",
+        "nodes": [
+          "readme_local_first",
+          "readme_zero_knowledge",
+          "readme_session_security",
+          "readme_no_silent_loss",
+          "readme_authenticated_updates",
+          "readme_reviewable_cryptography"
+        ],
+        "relation": "form",
+        "confidence": "EXTRACTED",
+        "confidence_score": 1.0,
+        "source_file": "README.md"
+      },
+      {
         "id": "graphify_extraction_pipeline",
         "label": "Graphify Extraction Pipeline",
         "nodes": [
@@ -82,7 +98,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 0,
       "norm_label": "graphify pipeline",
       "id": "_agents_skills_graphify_skill_graphify_pipeline"
     },
@@ -95,7 +111,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 8,
+      "community": 0,
       "norm_label": "structural extraction",
       "id": "_agents_skills_graphify_skill_structural_extraction"
     },
@@ -108,7 +124,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 7,
+      "community": 0,
       "norm_label": "semantic extraction",
       "id": "_agents_skills_graphify_skill_semantic_extraction"
     },
@@ -121,7 +137,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 0,
       "norm_label": "community detection",
       "id": "_agents_skills_graphify_skill_community_detection"
     },
@@ -134,7 +150,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 0,
       "norm_label": "graph honesty rules",
       "id": "_agents_skills_graphify_skill_honesty_rules"
     },
@@ -147,7 +163,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 6,
+      "community": 0,
       "norm_label": "url ingestion",
       "id": "_agents_skills_graphify_references_add_watch_url_ingestion"
     },
@@ -160,7 +176,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 8,
+      "community": 0,
       "norm_label": "folder watcher",
       "id": "_agents_skills_graphify_references_add_watch_folder_watcher"
     },
@@ -173,7 +189,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 8,
+      "community": 0,
       "norm_label": "debounced rebuild",
       "id": "_agents_skills_graphify_references_add_watch_debounced_rebuild"
     },
@@ -186,7 +202,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 13,
+      "community": 11,
       "norm_label": "graph export formats",
       "id": "_agents_skills_graphify_references_exports_graph_exports"
     },
@@ -199,7 +215,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 13,
+      "community": 11,
       "norm_label": "mcp graph server",
       "id": "_agents_skills_graphify_references_exports_mcp_graph_server"
     },
@@ -212,7 +228,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 0,
       "norm_label": "token reduction benchmark",
       "id": "_agents_skills_graphify_references_exports_token_reduction_benchmark"
     },
@@ -225,7 +241,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 7,
+      "community": 0,
       "norm_label": "extraction confidence rubric",
       "id": "_agents_skills_graphify_references_extraction_spec_confidence_rubric"
     },
@@ -238,7 +254,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 7,
+      "community": 0,
       "norm_label": "deterministic node ids",
       "id": "_agents_skills_graphify_references_extraction_spec_deterministic_node_ids"
     },
@@ -251,7 +267,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 7,
+      "community": 0,
       "norm_label": "semantic similarity edges",
       "id": "_agents_skills_graphify_references_extraction_spec_semantic_similarity"
     },
@@ -264,7 +280,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 7,
+      "community": 0,
       "norm_label": "graph hyperedges",
       "id": "_agents_skills_graphify_references_extraction_spec_hyperedges"
     },
@@ -277,7 +293,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 0,
       "norm_label": "cross-repository graph",
       "id": "_agents_skills_graphify_references_github_and_merge_cross_repo_graph"
     },
@@ -290,7 +306,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 0,
       "norm_label": "monorepo graph merge",
       "id": "_agents_skills_graphify_references_github_and_merge_monorepo_merge"
     },
@@ -303,7 +319,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 8,
+      "community": 0,
       "norm_label": "post-commit graph rebuild",
       "id": "_agents_skills_graphify_references_hooks_post_commit_rebuild"
     },
@@ -316,7 +332,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 0,
       "norm_label": "claude.md graphify integration",
       "id": "_agents_skills_graphify_references_hooks_claude_md_integration"
     },
@@ -329,7 +345,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 9,
+      "community": 7,
       "norm_label": "constrained query expansion",
       "id": "_agents_skills_graphify_references_query_constrained_query_expansion"
     },
@@ -342,7 +358,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 9,
+      "community": 7,
       "norm_label": "graph traversal",
       "id": "_agents_skills_graphify_references_query_graph_traversal"
     },
@@ -355,7 +371,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 9,
+      "community": 7,
       "norm_label": "shortest concept path",
       "id": "_agents_skills_graphify_references_query_shortest_path"
     },
@@ -368,7 +384,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 9,
+      "community": 7,
       "norm_label": "graph work memory",
       "id": "_agents_skills_graphify_references_query_work_memory"
     },
@@ -381,7 +397,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 6,
+      "community": 0,
       "norm_label": "domain-prompted transcription",
       "id": "_agents_skills_graphify_references_transcribe_domain_prompted_transcription"
     },
@@ -394,7 +410,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 6,
+      "community": 0,
       "norm_label": "whisper",
       "id": "_agents_skills_graphify_references_transcribe_whisper"
     },
@@ -407,7 +423,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 6,
+      "community": 0,
       "norm_label": "incremental extraction",
       "id": "_agents_skills_graphify_references_update_incremental_extraction"
     },
@@ -420,7 +436,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 6,
+      "community": 0,
       "norm_label": "replace on re-extract",
       "id": "_agents_skills_graphify_references_update_replace_on_reextract"
     },
@@ -433,7 +449,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 1,
+      "community": 0,
       "norm_label": "cluster-only refresh",
       "id": "_agents_skills_graphify_references_update_cluster_only"
     },
@@ -446,7 +462,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 2,
+      "community": 3,
       "norm_label": "tlc spec-driven development",
       "id": "_agents_skills_tlc_spec_driven_readme_tlc_spec_driven"
     },
@@ -459,7 +475,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 2,
+      "community": 3,
       "norm_label": "four adaptive phases",
       "id": "_agents_skills_tlc_spec_driven_readme_four_adaptive_phases"
     },
@@ -472,7 +488,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 2,
+      "community": 3,
       "norm_label": "quick mode",
       "id": "_agents_skills_tlc_spec_driven_readme_quick_mode"
     },
@@ -485,7 +501,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 2,
+      "community": 3,
       "norm_label": "atomic conventional commits",
       "id": "_agents_skills_tlc_spec_driven_readme_atomic_commits"
     },
@@ -498,7 +514,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 2,
+      "community": 3,
       "norm_label": "workflow auto-sizing",
       "id": "_agents_skills_tlc_spec_driven_skill_auto_sizing"
     },
@@ -511,7 +527,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 2,
+      "community": 3,
       "norm_label": "sub-agent delegation",
       "id": "_agents_skills_tlc_spec_driven_skill_subagent_delegation"
     },
@@ -524,7 +540,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 5,
+      "community": 6,
       "norm_label": "knowledge verification chain",
       "id": "_agents_skills_tlc_spec_driven_skill_knowledge_verification_chain"
     },
@@ -537,7 +553,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 3,
+      "community": 4,
       "norm_label": "brownfield mapping",
       "id": "_agents_skills_tlc_spec_driven_references_brownfield_mapping_brownfield_mapping"
     },
@@ -550,7 +566,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 3,
+      "community": 4,
       "norm_label": "seven codebase documents",
       "id": "_agents_skills_tlc_spec_driven_references_brownfield_mapping_seven_codebase_documents"
     },
@@ -563,7 +579,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 3,
+      "community": 4,
       "norm_label": "testing gate matrix",
       "id": "_agents_skills_tlc_spec_driven_references_brownfield_mapping_testing_gate_matrix"
     },
@@ -576,7 +592,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 3,
+      "community": 4,
       "norm_label": "graceful search degradation",
       "id": "_agents_skills_tlc_spec_driven_references_code_analysis_graceful_search_degradation"
     },
@@ -589,7 +605,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 3,
+      "community": 4,
       "norm_label": "structural code search",
       "id": "_agents_skills_tlc_spec_driven_references_code_analysis_structural_code_search"
     },
@@ -602,7 +618,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 2,
+      "community": 3,
       "norm_label": "surgical changes",
       "id": "_agents_skills_tlc_spec_driven_references_coding_principles_surgical_changes"
     },
@@ -615,7 +631,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 3,
+      "community": 4,
       "norm_label": "test integrity",
       "id": "_agents_skills_tlc_spec_driven_references_coding_principles_test_integrity"
     },
@@ -628,7 +644,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 3,
+      "community": 4,
       "norm_label": "evidence-backed codebase concerns",
       "id": "_agents_skills_tlc_spec_driven_references_concerns_evidence_backed_concerns"
     },
@@ -641,7 +657,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 3,
+      "community": 4,
       "norm_label": "living risk documentation",
       "id": "_agents_skills_tlc_spec_driven_references_concerns_living_risk_documentation"
     },
@@ -654,7 +670,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 2,
+      "community": 3,
       "norm_label": "context budget zones",
       "id": "_agents_skills_tlc_spec_driven_references_context_limits_context_budget_zones"
     },
@@ -667,7 +683,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 5,
+      "community": 6,
       "norm_label": "feature design",
       "id": "_agents_skills_tlc_spec_driven_references_design_feature_design"
     },
@@ -680,7 +696,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 5,
+      "community": 6,
       "norm_label": "code reuse analysis",
       "id": "_agents_skills_tlc_spec_driven_references_design_code_reuse_analysis"
     },
@@ -693,7 +709,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 5,
+      "community": 6,
       "norm_label": "gray area discussion",
       "id": "_agents_skills_tlc_spec_driven_references_discuss_gray_area_discussion"
     },
@@ -706,7 +722,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 5,
+      "community": 6,
       "norm_label": "locked context decisions",
       "id": "_agents_skills_tlc_spec_driven_references_discuss_locked_context_decisions"
     },
@@ -719,7 +735,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 5,
+      "community": 6,
       "norm_label": "feature scope guardrail",
       "id": "_agents_skills_tlc_spec_driven_references_discuss_scope_guardrail"
     },
@@ -732,7 +748,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 4,
+      "community": 5,
       "norm_label": "execute",
       "id": "agents_skills_tlc_spec_driven_references_implement_execute"
     },
@@ -745,7 +761,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 4,
+      "community": 5,
       "norm_label": "tdd gate and atomic commit",
       "id": "agents_skills_tlc_spec_driven_references_implement_tdd_gate_commit"
     },
@@ -758,7 +774,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 11,
+      "community": 9,
       "norm_label": "project initialization",
       "id": "agents_skills_tlc_spec_driven_references_project_init_project_initialization"
     },
@@ -771,7 +787,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 12,
+      "community": 10,
       "norm_label": "quick mode",
       "id": "agents_skills_tlc_spec_driven_references_quick_mode_quick_mode"
     },
@@ -784,7 +800,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "roadmap creation",
       "id": "agents_skills_tlc_spec_driven_references_roadmap_roadmap_creation"
     },
@@ -797,7 +813,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 12,
+      "community": 10,
       "norm_label": "session handoff",
       "id": "agents_skills_tlc_spec_driven_references_session_handoff_session_handoff"
     },
@@ -810,7 +826,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 4,
+      "community": 5,
       "norm_label": "specify",
       "id": "agents_skills_tlc_spec_driven_references_specify_specify"
     },
@@ -823,7 +839,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 4,
+      "community": 5,
       "norm_label": "requirement traceability",
       "id": "agents_skills_tlc_spec_driven_references_specify_requirement_traceability"
     },
@@ -836,7 +852,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 12,
+      "community": 10,
       "norm_label": "state management",
       "id": "agents_skills_tlc_spec_driven_references_state_management_state_management"
     },
@@ -849,7 +865,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 4,
+      "community": 5,
       "norm_label": "atomic tasks",
       "id": "agents_skills_tlc_spec_driven_references_tasks_atomic_tasks"
     },
@@ -862,7 +878,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 4,
+      "community": 5,
       "norm_label": "test coverage matrix",
       "id": "agents_skills_tlc_spec_driven_references_tasks_test_coverage_matrix"
     },
@@ -875,7 +891,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 4,
+      "community": 5,
       "norm_label": "validate and verify",
       "id": "agents_skills_tlc_spec_driven_references_validate_validate_verify"
     },
@@ -888,7 +904,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "secure vault v1 context",
       "id": "specs_features_secure_vault_context_secure_vault_context"
     },
@@ -901,7 +917,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "secure vault implementation decisions",
       "id": "specs_features_secure_vault_context_implementation_decisions"
     },
@@ -914,7 +930,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "secure vault v1 specification",
       "id": "specs_features_secure_vault_spec_secure_vault_v1"
     },
@@ -927,7 +943,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "independent security sessions",
       "id": "specs_features_secure_vault_spec_independent_security_sessions"
     },
@@ -940,7 +956,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "secret management",
       "id": "specs_features_secure_vault_spec_secret_management"
     },
@@ -953,7 +969,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "zero-knowledge cloud sync",
       "id": "specs_features_secure_vault_spec_zero_knowledge_sync"
     },
@@ -966,7 +982,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "authenticated updates",
       "id": "specs_features_secure_vault_spec_authenticated_updates"
     },
@@ -979,7 +995,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "secrets storage v1 threat model",
       "id": "specs_features_secure_vault_threat_model_threat_model"
     },
@@ -992,7 +1008,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "trust boundaries and data flow",
       "id": "specs_features_secure_vault_threat_model_trust_boundaries"
     },
@@ -1005,7 +1021,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "mandatory security controls",
       "id": "specs_features_secure_vault_threat_model_mandatory_security_controls"
     },
@@ -1018,7 +1034,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 10,
+      "community": 8,
       "norm_label": "security-blocking prototypes",
       "id": "specs_features_secure_vault_threat_model_security_prototypes"
     },
@@ -1031,7 +1047,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 11,
+      "community": 9,
       "norm_label": "secrets storage project",
       "id": "specs_project_project_secrets_storage"
     },
@@ -1044,7 +1060,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 11,
+      "community": 9,
       "norm_label": "tauri 2 rust vite tailwind stack",
       "id": "specs_project_project_tauri_rust_frontend_stack"
     },
@@ -1057,7 +1073,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "commit version and release policy",
       "id": "specs_project_releases_release_policy"
     },
@@ -1070,7 +1086,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "secure release pipeline",
       "id": "specs_project_releases_secure_release_pipeline"
     },
@@ -1083,7 +1099,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "product roadmap",
       "id": "specs_project_roadmap_product_roadmap"
     },
@@ -1096,7 +1112,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 10,
+      "community": 8,
       "norm_label": "m0 security foundation",
       "id": "specs_project_roadmap_security_foundation"
     },
@@ -1109,7 +1125,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "m1 usable local vault",
       "id": "specs_project_roadmap_local_vault"
     },
@@ -1122,7 +1138,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "m2 zero-knowledge sync",
       "id": "specs_project_roadmap_zero_knowledge_sync"
     },
@@ -1135,7 +1151,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "m3 secure v1 distribution",
       "id": "specs_project_roadmap_secure_distribution"
     },
@@ -1148,7 +1164,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 10,
+      "community": 8,
       "norm_label": "project state",
       "id": "specs_project_state_project_state"
     },
@@ -1161,7 +1177,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "architecture decisions ad-001 to ad-018",
       "id": "specs_project_state_architecture_decisions"
     },
@@ -1174,7 +1190,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 10,
+      "community": 8,
       "norm_label": "mandatory graphify update rule",
       "id": "agents_graphify_update_rule"
     },
@@ -1187,9 +1203,139 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "contribution workflow",
       "id": "contributing_contribution_workflow"
+    },
+    {
+      "label": "Secrets Storage",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "readme_secrets_storage",
+      "community": 2,
+      "norm_label": "secrets storage"
+    },
+    {
+      "label": "Cofre criptografado",
+      "file_type": "concept",
+      "source_file": "README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "readme_encrypted_vault",
+      "community": 2,
+      "norm_label": "cofre criptografado"
+    },
+    {
+      "label": "Local-first",
+      "file_type": "rationale",
+      "source_file": "README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "readme_local_first",
+      "community": 2,
+      "norm_label": "local-first"
+    },
+    {
+      "label": "Zero-knowledge",
+      "file_type": "rationale",
+      "source_file": "README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "readme_zero_knowledge",
+      "community": 2,
+      "norm_label": "zero-knowledge"
+    },
+    {
+      "label": "Seguran\u00e7a por sess\u00e3o",
+      "file_type": "rationale",
+      "source_file": "README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "readme_session_security",
+      "community": 2,
+      "norm_label": "seguranca por sessao"
+    },
+    {
+      "label": "Sem perda silenciosa",
+      "file_type": "rationale",
+      "source_file": "README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "readme_no_silent_loss",
+      "community": 2,
+      "norm_label": "sem perda silenciosa"
+    },
+    {
+      "label": "Atualiza\u00e7\u00f5es autenticadas",
+      "file_type": "rationale",
+      "source_file": "README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "readme_authenticated_updates",
+      "community": 2,
+      "norm_label": "atualizacoes autenticadas"
+    },
+    {
+      "label": "Criptografia revis\u00e1vel",
+      "file_type": "rationale",
+      "source_file": "README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "readme_reviewable_cryptography",
+      "community": 2,
+      "norm_label": "criptografia revisavel"
+    },
+    {
+      "label": "M0 \u2014 Funda\u00e7\u00e3o de seguran\u00e7a",
+      "file_type": "concept",
+      "source_file": "README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "readme_m0_security_foundation",
+      "community": 2,
+      "norm_label": "m0 \u2014 fundacao de seguranca"
+    },
+    {
+      "label": "Modelo de amea\u00e7as",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "readme_threat_model",
+      "community": 2,
+      "norm_label": "modelo de ameacas"
     }
   ],
   "links": [
@@ -2042,9 +2188,115 @@
       "weight": 1.0,
       "source": "agents_graphify_update_rule",
       "target": "specs_project_state_project_state"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "readme_authenticated_updates",
+      "target": "readme_secrets_storage"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "readme_secrets_storage",
+      "target": "readme_encrypted_vault"
+    },
+    {
+      "relation": "cites",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "readme_secrets_storage",
+      "target": "readme_threat_model"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "readme_local_first",
+      "target": "readme_encrypted_vault"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "readme_no_silent_loss",
+      "target": "readme_encrypted_vault"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "readme_reviewable_cryptography",
+      "target": "readme_encrypted_vault"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "readme_session_security",
+      "target": "readme_encrypted_vault"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "readme_zero_knowledge",
+      "target": "readme_encrypted_vault"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "readme_m0_security_foundation",
+      "target": "readme_threat_model"
     }
   ],
   "hyperedges": [
+    {
+      "id": "readme_security_principles",
+      "label": "Princ\u00edpios de seguran\u00e7a do Secrets Storage",
+      "nodes": [
+        "readme_local_first",
+        "readme_zero_knowledge",
+        "readme_session_security",
+        "readme_no_silent_loss",
+        "readme_authenticated_updates",
+        "readme_reviewable_cryptography"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md"
+    },
     {
       "id": "graphify_extraction_pipeline",
       "label": "Graphify Extraction Pipeline",
@@ -2113,5 +2365,5 @@
       "source_file": ".specs/project/ROADMAP.md"
     }
   ],
-  "built_at_commit": "14d44de3bb4f0aeca8eb963e1a44393abdb2f735"
+  "built_at_commit": "b2149d5081709c98cde78217b7eb5cb5c633502e"
 }

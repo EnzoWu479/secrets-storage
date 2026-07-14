@@ -1,0 +1,87 @@
+# Secrets Storage
+
+Aplicativo desktop open source, local-first e zero-knowledge para armazenar senhas, chaves de API e outros segredos em um cofre criptografado. A proposta é sincronizar somente dados cifrados pelo OneDrive ou Google Drive escolhido pelo usuário, sem entregar ao provedor conteúdo legível ou material suficiente para descriptografá-lo.
+
+> [!IMPORTANT]
+> O projeto está em fase de planejamento. O marco atual é **M0 — Fundação de segurança**: o modelo de ameaças está em revisão e ainda não há aplicativo, binário ou fluxo de instalação disponível.
+
+## Princípios
+
+- **Local-first:** o cofre continua utilizável sem conexão e sincroniza quando a rede volta.
+- **Zero-knowledge:** provedores remotos recebem apenas blobs cifrados e os metadados mínimos necessários.
+- **Segurança por sessão:** cada sessão persistente tem sua própria senha mestra, estado de bloqueio e política de inatividade.
+- **Sem perda silenciosa:** edições concorrentes devem ser mescladas com segurança ou apresentadas para resolução explícita.
+- **Atualizações autenticadas:** manifestos e pacotes inválidos devem falhar de forma segura.
+- **Criptografia revisável:** o projeto usará primitivas modernas, bibliotecas auditadas e um formato versionado; nenhuma criptografia própria.
+
+## Escopo planejado para o v1
+
+- Aplicativo para Windows com múltiplas sessões independentes e nomeadas.
+- Registros de senha, API key, token genérico, nota secreta e chave SSH.
+- Bloqueio manual, automático por inatividade e integrado a eventos do Windows.
+- Pesquisa nas sessões desbloqueadas e movimentação de segredos entre sessões abertas.
+- Limpeza configurável do clipboard, com ação imediata para limpar agora.
+- Operação offline e sincronização automática de blobs cifrados pelo OneDrive ou Google Drive.
+- Modo somente leitura por sessão e dispositivo.
+- Mesclagem automática quando segura e resolução de conflitos campo a campo quando necessária.
+- Auto-update por releases autenticadas no GitHub.
+- Exportação e backup cifrados no fluxo normal.
+
+Não fazem parte do v1: macOS, Linux, dispositivos móveis, cofres compartilhados, extensão de navegador, autofill, TOTP, anexos e recuperação de acesso. Se a senha mestra for perdida, o v1 não oferecerá um mecanismo para recuperar a sessão.
+
+## Stack planejada
+
+| Camada | Tecnologia |
+| --- | --- |
+| Aplicativo desktop | Tauri 2 |
+| Core | Rust |
+| Frontend | Vite e Tailwind CSS |
+| Autorização da nuvem | OAuth 2.0 |
+| Provedores | Microsoft Graph e Google Drive API |
+| Atualizações | Tauri Updater e GitHub Releases |
+| Distribuição inicial | Windows / NSIS |
+
+O formato do cofre, a hierarquia de chaves, as primitivas e os parâmetros criptográficos ainda serão definidos após a aprovação do modelo de ameaças e a validação dos protótipos críticos.
+
+## Roadmap
+
+| Marco | Objetivo | Estado |
+| --- | --- | --- |
+| M0 — Fundação de segurança | Aprovar o modelo de ameaças, especificar o formato criptográfico e validar protótipos críticos | Em planejamento |
+| M1 — Cofre local utilizável | Entregar sessões e gerenciamento local de segredos sem depender da nuvem | Planejado |
+| M2 — Sincronização zero-knowledge | Sincronizar com segurança entre dispositivos Windows | Planejado |
+| M3 — Distribuição segura do v1 | Publicar uma versão verificável, atualizável e preparada para auditoria | Planejado |
+| M4 — Expansão de plataformas | Levar o cofre ao macOS e Linux sem reduzir as garantias de segurança | Futuro |
+
+Consulte o [roadmap detalhado](./.specs/project/ROADMAP.md) para os critérios de cada marco.
+
+## Estado do desenvolvimento
+
+O repositório contém atualmente a especificação do produto, o modelo de ameaças e as políticas do projeto. O scaffold Tauri/Vite/Tailwind ainda não foi criado; por isso, comandos de instalação, build e testes serão adicionados aqui quando forem executáveis.
+
+Antes da implementação, os próximos gates são:
+
+1. revisar e aprovar o modelo de ameaças do v1;
+2. executar os protótipos de segurança que bloqueiam decisões de arquitetura;
+3. definir o formato criptográfico versionado;
+4. criar o scaffold da aplicação e a automação de CI.
+
+## Documentação
+
+- [Visão, objetivos e escopo](./.specs/project/PROJECT.md)
+- [Roadmap](./.specs/project/ROADMAP.md)
+- [Especificação do cofre seguro v1](./.specs/features/secure-vault/spec.md)
+- [Modelo de ameaças](./.specs/features/secure-vault/threat-model.md)
+- [Decisões e estado do projeto](./.specs/project/STATE.md)
+- [Política de versões e releases](./.specs/project/RELEASES.md)
+- [Guia de contribuição](./CONTRIBUTING.md)
+
+## Contribuindo
+
+Contribuições devem partir de uma branch curta e entrar por pull request. Commits e títulos de PR seguem Conventional Commits, com tipo e escopo em inglês e descrição em português. Consulte [CONTRIBUTING.md](./CONTRIBUTING.md) para o fluxo completo e as exigências adicionais para mudanças sensíveis à segurança.
+
+## Segurança
+
+O modelo de ameaças ainda é um rascunho para revisão. Não use o projeto para armazenar segredos reais antes que a implementação, os testes de segurança e a revisão independente estejam concluídos.
+
+Vulnerabilidades não devem ser publicadas em issues enquanto um canal privado de divulgação ainda não estiver documentado.
