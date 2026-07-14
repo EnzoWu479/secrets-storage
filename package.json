@@ -5,15 +5,14 @@
   "packageManager": "pnpm@11.13.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vue-tsc --noEmit && vite build",
-    "preview": "vite preview",
+    "dev": "tauri dev",
+    "build": "tauri build",
     "tauri": "tauri",
     "test:frontend": "vitest run",
     "format:rust": "cargo fmt --manifest-path src-tauri/Cargo.toml --check",
     "lint:rust": "cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets --all-features -- -D warnings",
     "test:rust": "cargo test --manifest-path src-tauri/Cargo.toml",
-    "check:frontend": "pnpm test:frontend && pnpm build",
+    "check:frontend": "pnpm test:frontend && vue-tsc --noEmit && vite build",
     "check:rust": "pnpm format:rust && pnpm lint:rust && pnpm test:rust",
     "check": "pnpm check:frontend && pnpm check:rust"
   },

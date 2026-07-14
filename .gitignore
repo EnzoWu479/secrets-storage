@@ -14,6 +14,7 @@ dist/
 # Rust and Tauri generated files
 src-tauri/target/
 src-tauri/gen/schemas/
+src-tauri/tauri.release.conf.json
 
 # Editors and operating systems
 .idea/
