@@ -169,6 +169,7 @@ Nenhuma registrada.
 ## Quick Tasks Completed
 
 - [x] Criar script PowerShell para escolher `fix`, `feature` ou `release`, calcular o próximo SemVer, abrir `chore/release-vX.Y.Z` a partir de uma `main` limpa e sincronizar a versão nos manifests — 2026-07-14.
+- [x] Corrigir os atalhos do seletor de release para `X` (Fix), `F` (Feature) e `R` (Release), sem colisões — 2026-07-14.
 
 ## Deferred Ideas
 

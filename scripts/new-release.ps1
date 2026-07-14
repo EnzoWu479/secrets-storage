@@ -117,7 +117,7 @@ try {
 
     if ([string]::IsNullOrWhiteSpace($Type)) {
         $choices = @(
-            [Management.Automation.Host.ChoiceDescription]::new('&Fix', 'Incrementa PATCH: X.Y.Z -> X.Y.(Z+1)')
+            [Management.Automation.Host.ChoiceDescription]::new('Fi&x', 'Incrementa PATCH: X.Y.Z -> X.Y.(Z+1)')
             [Management.Automation.Host.ChoiceDescription]::new('&Feature', 'Incrementa MINOR: X.Y.Z -> X.(Y+1).0')
             [Management.Automation.Host.ChoiceDescription]::new('&Release', 'Incrementa MAJOR: X.Y.Z -> (X+1).0.0')
         )
