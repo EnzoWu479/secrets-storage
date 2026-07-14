@@ -170,6 +170,7 @@ Nenhuma registrada.
 
 - [x] Criar script PowerShell para escolher `fix`, `feature` ou `release`, calcular o próximo SemVer, abrir `chore/release-vX.Y.Z` a partir de uma `main` limpa e sincronizar a versão nos manifests — 2026-07-14.
 - [x] Corrigir os atalhos do seletor de release para `X` (Fix), `F` (Feature) e `R` (Release), sem colisões — 2026-07-14.
+- [x] Declarar `serde_json` diretamente no crate para o `generate_context!` compilar com o overlay do Tauri Updater usado em releases — 2026-07-14.
 
 ## Deferred Ideas
 
