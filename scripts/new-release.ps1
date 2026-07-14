@@ -3,13 +3,16 @@
 Cria uma branch de release e sincroniza a versão do aplicativo.
 
 .EXAMPLE
-.\scripts\new-release.ps1 -Version 0.1.0-alpha.1
+.\scripts\new-release.ps1
+
+.EXAMPLE
+.\scripts\new-release.ps1 -Type feature
 #>
 
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory, Position = 0)]
-    [string]$Version
+    [ValidateSet('fix', 'feature', 'release')]
+    [string]$Type
 )
 
 Set-StrictMode -Version Latest
@@ -50,6 +53,8 @@ function Replace-Version {
         [Parameter(Mandatory)]
         [string]$ExpectedCurrentVersion,
         [Parameter(Mandatory)]
+        [string]$NewVersion,
+        [Parameter(Mandatory)]
         [string]$Path
     )
 
@@ -61,17 +66,10 @@ function Replace-Version {
         throw "Versão divergente em ${Path}: $($match.Groups[2].Value), esperada $ExpectedCurrentVersion."
     }
 
-    return $Pattern.Replace($Content, "`${1}$Version`${3}", 1)
-}
-
-$semVerPattern = '^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*)?$'
-if ($Version -notmatch $semVerPattern) {
-    throw "Versão inválida: '$Version'. Use SemVer sem prefixo v e sem metadados +build."
+    return $Pattern.Replace($Content, "`${1}$NewVersion`${3}", 1)
 }
 
 $repoRoot = (Invoke-Git -Arguments @('rev-parse', '--show-toplevel') | Select-Object -First 1).Trim()
-$branchName = "chore/release-v$Version"
-$tagName = "v$Version"
 $utf8WithoutBom = [Text.UTF8Encoding]::new($false)
 
 Push-Location $repoRoot
@@ -90,22 +88,6 @@ try {
     $remoteMain = (Invoke-Git -Arguments @('rev-parse', 'refs/remotes/origin/main') | Select-Object -First 1).Trim()
     if ($localMain -ne $remoteMain) {
         throw 'A main local diverge de origin/main. Sincronize-a antes de criar a release branch.'
-    }
-
-    if (@(Invoke-Git -Arguments @('branch', '--list', $branchName)).Count -gt 0) {
-        throw "A branch local '$branchName' já existe."
-    }
-    if (@(Invoke-Git -Arguments @('tag', '--list', $tagName)).Count -gt 0) {
-        throw "A tag local '$tagName' já existe."
-    }
-
-    $remoteBranch = Invoke-Git -Arguments @('ls-remote', '--exit-code', '--heads', 'origin', $branchName) -AllowedExitCodes @(0, 2)
-    if (@($remoteBranch).Count -gt 0) {
-        throw "A branch remota '$branchName' já existe."
-    }
-    $remoteTag = Invoke-Git -Arguments @('ls-remote', '--exit-code', '--tags', 'origin', "refs/tags/$tagName") -AllowedExitCodes @(0, 2)
-    if (@($remoteTag).Count -gt 0) {
-        throw "A tag remota '$tagName' já existe."
     }
 
     $paths = @{
@@ -127,11 +109,73 @@ try {
         throw 'Não foi possível ler a versão canônica de src-tauri/tauri.conf.json.'
     }
 
+    $semVerPattern = '^(?<major>0|[1-9]\d*)\.(?<minor>0|[1-9]\d*)\.(?<patch>0|[1-9]\d*)(?:-(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*)?$'
+    $versionMatch = [regex]::Match($currentVersion, $semVerPattern)
+    if (-not $versionMatch.Success) {
+        throw "A versão canônica '$currentVersion' não é um SemVer suportado."
+    }
+
+    if ([string]::IsNullOrWhiteSpace($Type)) {
+        $choices = @(
+            [Management.Automation.Host.ChoiceDescription]::new('&Fix', 'Incrementa PATCH: X.Y.Z -> X.Y.(Z+1)')
+            [Management.Automation.Host.ChoiceDescription]::new('&Feature', 'Incrementa MINOR: X.Y.Z -> X.(Y+1).0')
+            [Management.Automation.Host.ChoiceDescription]::new('&Release', 'Incrementa MAJOR: X.Y.Z -> (X+1).0.0')
+        )
+        $selected = $Host.UI.PromptForChoice(
+            'Tipo da próxima versão',
+            "Versão atual: $currentVersion. Qual posição deseja incrementar?",
+            $choices,
+            0
+        )
+        $Type = @('fix', 'feature', 'release')[$selected]
+    }
+
+    [long]$major = $versionMatch.Groups['major'].Value
+    [long]$minor = $versionMatch.Groups['minor'].Value
+    [long]$patch = $versionMatch.Groups['patch'].Value
+    switch ($Type) {
+        'fix' {
+            if ($patch -eq [long]::MaxValue) { throw 'PATCH atingiu o maior valor suportado.' }
+            $patch++
+        }
+        'feature' {
+            if ($minor -eq [long]::MaxValue) { throw 'MINOR atingiu o maior valor suportado.' }
+            $minor++
+            $patch = 0
+        }
+        'release' {
+            if ($major -eq [long]::MaxValue) { throw 'MAJOR atingiu o maior valor suportado.' }
+            $major++
+            $minor = 0
+            $patch = 0
+        }
+    }
+
+    $version = "$major.$minor.$patch"
+    $branchName = "chore/release-v$version"
+    $tagName = "v$version"
+
+    if (@(Invoke-Git -Arguments @('branch', '--list', $branchName)).Count -gt 0) {
+        throw "A branch local '$branchName' já existe."
+    }
+    if (@(Invoke-Git -Arguments @('tag', '--list', $tagName)).Count -gt 0) {
+        throw "A tag local '$tagName' já existe."
+    }
+
+    $remoteBranch = Invoke-Git -Arguments @('ls-remote', '--exit-code', '--heads', 'origin', $branchName) -AllowedExitCodes @(0, 2)
+    if (@($remoteBranch).Count -gt 0) {
+        throw "A branch remota '$branchName' já existe."
+    }
+    $remoteTag = Invoke-Git -Arguments @('ls-remote', '--exit-code', '--tags', 'origin', "refs/tags/$tagName") -AllowedExitCodes @(0, 2)
+    if (@($remoteTag).Count -gt 0) {
+        throw "A tag remota '$tagName' já existe."
+    }
+
     $updated = @{
-        Package = Replace-Version $original.Package $jsonPattern $currentVersion $paths.Package
-        Tauri = Replace-Version $original.Tauri $jsonPattern $currentVersion $paths.Tauri
-        Cargo = Replace-Version $original.Cargo $cargoPattern $currentVersion $paths.Cargo
-        CargoLock = Replace-Version $original.CargoLock $cargoLockPattern $currentVersion $paths.CargoLock
+        Package = Replace-Version $original.Package $jsonPattern $currentVersion $version $paths.Package
+        Tauri = Replace-Version $original.Tauri $jsonPattern $currentVersion $version $paths.Tauri
+        Cargo = Replace-Version $original.Cargo $cargoPattern $currentVersion $version $paths.Cargo
+        CargoLock = Replace-Version $original.CargoLock $cargoLockPattern $currentVersion $version $paths.CargoLock
     }
 
     Invoke-Git -Arguments @('switch', '-c', $branchName) | Out-Null
@@ -150,7 +194,8 @@ try {
     }
 
     Write-Host "Release branch criada: $branchName" -ForegroundColor Green
-    Write-Host "Versão sincronizada: $currentVersion -> $Version"
+    Write-Host "Tipo selecionado: $Type"
+    Write-Host "Versão sincronizada: $currentVersion -> $version"
     Write-Host 'Próximos passos: revise o CHANGELOG.md, execute pnpm check e crie o commit:'
     Write-Host "  git add package.json src-tauri/Cargo.toml src-tauri/Cargo.lock src-tauri/tauri.conf.json CHANGELOG.md"
     Write-Host "  git commit -m `"chore(release): prepara $tagName`""

@@ -86,10 +86,10 @@ O updater está registrado no core Rust e não concede capability de atualizaç�
 Para iniciar uma Release PR a partir de uma `main` limpa e sincronizada:
 
 ```powershell
-.\scripts\new-release.ps1 -Version 0.1.0-alpha.1
+.\scripts\new-release.ps1
 ```
 
-O script valida SemVer e versões já existentes, cria `chore/release-v<versão>` e sincroniza `package.json`, `tauri.conf.json`, `Cargo.toml` e `Cargo.lock`. Ele não cria tag, commit, push ou release; o changelog continua sujeito a revisão humana.
+O script pergunta se a mudança é `fix` (PATCH), `feature` (MINOR) ou `release` (MAJOR), calcula a próxima versão a partir de `tauri.conf.json`, cria `chore/release-v<versão>` e sincroniza `package.json`, `tauri.conf.json`, `Cargo.toml` e `Cargo.lock`. Para automação, a escolha pode ser informada com `-Type fix|feature|release`. Ele não cria tag, commit, push ou release; o changelog continua sujeito a revisão humana.
 
 Os próximos gates são:
 
