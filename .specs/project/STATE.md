@@ -1,7 +1,7 @@
 # State
 
 **Last Updated:** 2026-07-14
-**Current Work:** Fundação executável — scaffold Tauri 2, Vue 3, TypeScript e Tailwind CSS
+**Current Work:** M0 — executar protótipos de segurança que bloqueiam o design criptográfico
 
 ---
 

@@ -7,7 +7,14 @@
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "test:frontend": "vitest run",
+    "format:rust": "cargo fmt --manifest-path src-tauri/Cargo.toml --check",
+    "lint:rust": "cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets --all-features -- -D warnings",
+    "test:rust": "cargo test --manifest-path src-tauri/Cargo.toml",
+    "check:frontend": "npm run test:frontend && npm run build",
+    "check:rust": "npm run format:rust && npm run lint:rust && npm run test:rust",
+    "check": "npm run check:frontend && npm run check:rust"
   },
   "dependencies": {
     "@tauri-apps/api": "^2",
@@ -17,9 +24,12 @@
     "@tailwindcss/vite": "^4",
     "@tauri-apps/cli": "^2",
     "@vitejs/plugin-vue": "^5.2.1",
+    "@vue/test-utils": "^2.4.11",
+    "jsdom": "^29.1.1",
     "tailwindcss": "^4",
     "typescript": "~5.6.2",
     "vite": "^6.0.3",
+    "vitest": "^4.1.10",
     "vue-tsc": "^2.1.10"
   }
 }

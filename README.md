@@ -55,16 +55,24 @@ O formato do cofre, a hierarquia de chaves, as primitivas e os parâmetros cript
 
 Consulte o [roadmap detalhado](./.specs/project/ROADMAP.md) para os critérios de cada marco.
 
-## Estado do desenvolvimento
+## Desenvolvimento
 
-O repositório contém atualmente a especificação do produto, o modelo de ameaças e as políticas do projeto. O scaffold Tauri/Vite/Tailwind ainda não foi criado; por isso, comandos de instalação, build e testes serão adicionados aqui quando forem executáveis.
+Pré-requisitos no Windows: Node.js 24 LTS, Rust stable com target MSVC, Microsoft C++ Build Tools, Windows SDK e WebView2.
 
-Antes da implementação, os próximos gates são:
+```powershell
+npm ci
+npm run check
+npm run tauri dev
+```
 
-1. revisar e aprovar o modelo de ameaças do v1;
-2. executar os protótipos de segurança que bloqueiam decisões de arquitetura;
-3. definir o formato criptográfico versionado;
-4. criar o scaffold da aplicação e a automação de CI.
+O scaffold Tauri 2, Vue 3, TypeScript e Tailwind está executável, mas contém apenas uma tela de fundação. Ainda não existe armazenamento de segredos nem implementação criptográfica.
+
+Os próximos gates são:
+
+1. executar os protótipos de segurança que bloqueiam decisões de arquitetura;
+2. definir o formato criptográfico versionado;
+3. implementar a automação de CI;
+4. iniciar o cofre local somente após fechar as decisões bloqueadoras.
 
 ## Documentação
 
