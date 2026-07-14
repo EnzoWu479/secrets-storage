@@ -3,7 +3,7 @@
 Aplicativo desktop open source, local-first e zero-knowledge para armazenar senhas, chaves de API e outros segredos em um cofre criptografado. A proposta é sincronizar somente dados cifrados pelo OneDrive ou Google Drive escolhido pelo usuário, sem entregar ao provedor conteúdo legível ou material suficiente para descriptografá-lo.
 
 > [!IMPORTANT]
-> O projeto está em fase de planejamento. O marco atual é **M0 — Fundação de segurança**: o modelo de ameaças está em revisão e ainda não há aplicativo, binário ou fluxo de instalação disponível.
+> O projeto está no marco **M0 — Fundação de segurança**: o modelo de ameaças foi aprovado como base de design, mas os controles ainda dependem de implementação e evidência. Não há release utilizável para armazenar segredos reais.
 
 ## Princípios
 
@@ -35,7 +35,7 @@ Não fazem parte do v1: macOS, Linux, dispositivos móveis, cofres compartilhado
 | --- | --- |
 | Aplicativo desktop | Tauri 2 |
 | Core | Rust |
-| Frontend | Vite e Tailwind CSS |
+| Frontend | Vue 3, TypeScript, Vite e Tailwind CSS |
 | Autorização da nuvem | OAuth 2.0 |
 | Provedores | Microsoft Graph e Google Drive API |
 | Atualizações | Tauri Updater e GitHub Releases |
@@ -82,6 +82,6 @@ Contribuições devem partir de uma branch curta e entrar por pull request. Comm
 
 ## Segurança
 
-O modelo de ameaças ainda é um rascunho para revisão. Não use o projeto para armazenar segredos reais antes que a implementação, os testes de segurança e a revisão independente estejam concluídos.
+O modelo de ameaças foi aprovado como base de design, não como certificação da implementação. Não use o projeto para armazenar segredos reais antes que a implementação, os testes de segurança e a revisão independente estejam concluídos.
 
 Vulnerabilidades não devem ser publicadas em issues enquanto um canal privado de divulgação ainda não estiver documentado.

@@ -1,7 +1,7 @@
 # Roadmap
 
 **Current Milestone:** M0 — Fundação de segurança
-**Status:** Planning
+**Status:** In Progress
 
 ---
 
@@ -12,7 +12,7 @@
 
 ### Features
 
-**Modelo de ameaças e requisitos de segurança** — DRAFT / IN REVIEW
+**Modelo de ameaças e requisitos de segurança** — COMPLETE
 
 - Definir ativos, fronteiras de confiança, adversários e ataques previstos.
 - Cobrir memória, disco, logs, clipboard, arquivos temporários, IPC, interface, cadeia de atualização, OAuth e sincronização.

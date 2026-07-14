@@ -1,7 +1,7 @@
 # State
 
-**Last Updated:** 2026-07-13
-**Current Work:** Cofre Seguro v1 — modelo de ameaças em revisão antes do design criptográfico
+**Last Updated:** 2026-07-14
+**Current Work:** Fundação executável — scaffold Tauri 2, Vue 3, TypeScript e Tailwind CSS
 
 ---
 
@@ -135,6 +135,20 @@
 **Trade-off:** O fluxo adiciona uma PR e confirmação manual por release; assinatura, smoke tests e imutabilidade tornam correções pós-publicação uma nova versão obrigatória.
 **Impact:** `tauri.conf.json` será a fonte canônica da versão; workflows validarão manifests e tags, usarão permissões mínimas e separarão assinatura Tauri, Authenticode e attestations. A configuração remota está documentada em `.specs/project/RELEASES.md`.
 
+### AD-019: Aprovação do modelo de ameaças do v1 (2026-07-14)
+
+**Decision:** O modelo de ameaças foi aprovado como base para o design e a implementação do v1, incluindo riscos residuais, limites de garantia e protótipos bloqueadores documentados.
+**Reason:** As fronteiras de confiança e os controles obrigatórios estão suficientemente definidos para orientar o scaffold e os experimentos de M0.
+**Trade-off:** A aprovação não certifica controles ainda não implementados e mantém KDF, AEAD, formato, memória protegida e checkpoints bloqueados pelos protótipos correspondentes.
+**Impact:** O projeto pode criar a fundação executável e avançar nos protótipos, mantendo os gates de release do modelo de ameaças.
+
+### AD-020: Vue 3 e TypeScript no frontend (2026-07-14)
+
+**Decision:** O frontend usará Vue 3 com TypeScript, Vite e Tailwind CSS.
+**Reason:** A combinação foi definida pelo usuário e oferece uma base tipada, componentizada e empacotada localmente para a interface Tauri.
+**Trade-off:** Vue adiciona runtime e dependências em relação a HTML/TypeScript puro, exigindo auditoria e atualização controlada.
+**Impact:** Componentes, testes e configuração do frontend devem seguir Vue 3, sem conteúdo remoto em runtime e sob CSP estrita.
+
 ---
 
 ## Active Blockers
@@ -163,7 +177,7 @@ Nenhuma.
 
 ## Todos
 
-- [ ] Revisar e aprovar o modelo de ameaças do v1, incluindo riscos residuais e limites explícitos de garantia.
+- [x] Revisar e aprovar o modelo de ameaças do v1, incluindo riscos residuais e limites explícitos de garantia.
 - [ ] Executar os protótipos críticos definidos no modelo de ameaças antes de escolher algoritmos e parâmetros finais.
 - [ ] Definir arquitetura e formato criptográfico após aprovação do modelo de ameaças.
 - [ ] Criar/configurar o repositório remoto e aplicar rulesets de `main` e tags `v*`, squash merge, environment `release` e immutable releases.

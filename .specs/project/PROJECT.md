@@ -17,7 +17,7 @@
 
 - Framework desktop: Tauri 2
 - Backend: Rust
-- Frontend: Vite e Tailwind CSS
+- Frontend: Vue 3 com TypeScript, Vite e Tailwind CSS
 - Direção visual inicial: interface funcional e genérica; identidade visual própria será explorada após validar estrutura, fluxos e segurança
 - Persistência local: formato de cofre criptografado a definir na fase de design
 
