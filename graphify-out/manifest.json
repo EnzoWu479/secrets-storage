@@ -155,8 +155,8 @@
     "semantic_hash": ""
   },
   ".specs/project/RELEASES.md": {
-    "mtime": 1784028957.71515,
-    "ast_hash": "e45aca6dde77b69460681bb80a7f0a58",
+    "mtime": 1784034760.725042,
+    "ast_hash": "63a9a5cba25e048c639ab6fdd8c86f04",
     "semantic_hash": ""
   },
   ".specs/project/ROADMAP.md": {
@@ -165,8 +165,8 @@
     "semantic_hash": ""
   },
   ".specs/project/STATE.md": {
-    "mtime": 1784030977.7737145,
-    "ast_hash": "afa040103db393d1209b76c99495bcc3",
+    "mtime": 1784034758.2487626,
+    "ast_hash": "a8a3d0bcc6ec012f3aaa55d7e948e3d7",
     "semantic_hash": ""
   },
   "AGENTS.md": {
@@ -180,8 +180,8 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1784033043.0947726,
-    "ast_hash": "bf6d232f2aaefb7e5fe22a6f31ddc709",
+    "mtime": 1784034754.054025,
+    "ast_hash": "3c44ffb54ea72322893f6a161c7d74dd",
     "semantic_hash": ""
   },
   ".vscode/extensions.json": {
@@ -190,8 +190,8 @@
     "semantic_hash": ""
   },
   "package.json": {
-    "mtime": 1784033035.7815819,
-    "ast_hash": "16615b5e99c7dd5d2cb6d814984bd12e",
+    "mtime": 1784034736.6940713,
+    "ast_hash": "4a4b130a9993a3847c73a23f071f73ec",
     "semantic_hash": ""
   },
   "src-tauri/build.rs": {
@@ -205,8 +205,8 @@
     "semantic_hash": ""
   },
   "src-tauri/src/lib.rs": {
-    "mtime": 1784030433.9506161,
-    "ast_hash": "fa3dc64d42c1291437886e60275745d6",
+    "mtime": 1784034396.64614,
+    "ast_hash": "1792d1cd9471404411dc3d91ea19d90b",
     "semantic_hash": ""
   },
   "src-tauri/src/main.rs": {
@@ -215,8 +215,8 @@
     "semantic_hash": ""
   },
   "src-tauri/tauri.conf.json": {
-    "mtime": 1784033038.921487,
-    "ast_hash": "745c8866f5cd8d7f6cc1c052b36abd38",
+    "mtime": 1784034738.8275435,
+    "ast_hash": "63fc51e2835a21e620085add759469b6",
     "semantic_hash": ""
   },
   "src/App.test.ts": {
@@ -260,8 +260,8 @@
     "semantic_hash": ""
   },
   ".specs/codebase/TESTING.md": {
-    "mtime": 1784033046.5041986,
-    "ast_hash": "34894b68be60693fd15392bd2bc1a53f",
+    "mtime": 1784034756.077739,
+    "ast_hash": "b3186448c7a4f094f46a12bfc5256c5e",
     "semantic_hash": ""
   },
   "index.html": {
@@ -342,6 +342,21 @@
   "pnpm-workspace.yaml": {
     "mtime": 1784033131.0782838,
     "ast_hash": "b742abf2d03aa9d79c3290767176eb41",
+    "semantic_hash": ""
+  },
+  ".github/workflows/ci.yml": {
+    "mtime": 1784034798.8042762,
+    "ast_hash": "454a6d7aa8421b135e16c69aab2e9bc9",
+    "semantic_hash": ""
+  },
+  ".github/workflows/release.yml": {
+    "mtime": 1784034801.9476657,
+    "ast_hash": "d0cb103434ec6e1ad4484c803efcb22e",
+    "semantic_hash": ""
+  },
+  "CHANGELOG.md": {
+    "mtime": 1784034751.531636,
+    "ast_hash": "f53f7cfacb5502ec71aed03154a0c612",
     "semantic_hash": ""
   }
 }
