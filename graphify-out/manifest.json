@@ -165,8 +165,8 @@
     "semantic_hash": ""
   },
   ".specs/project/STATE.md": {
-    "mtime": 1784052665.8610048,
-    "ast_hash": "345d47e75d616365d336cd80a806adbf",
+    "mtime": 1784055030.9936056,
+    "ast_hash": "b88a79257ee0b8f9fcf8129d1be5c7c1",
     "semantic_hash": ""
   },
   "AGENTS.md": {
@@ -190,8 +190,8 @@
     "semantic_hash": ""
   },
   "package.json": {
-    "mtime": 1784052560.2940054,
-    "ast_hash": "cea1c533c3a176a9b2a814f873bb64c5",
+    "mtime": 1784053151.4741852,
+    "ast_hash": "cc127537253292f9d415d4b22e37b9db",
     "semantic_hash": ""
   },
   "src-tauri/build.rs": {
@@ -215,8 +215,8 @@
     "semantic_hash": ""
   },
   "src-tauri/tauri.conf.json": {
-    "mtime": 1784052560.3291457,
-    "ast_hash": "ab3bcaeff2cd7851afb6cbfb72a877f4",
+    "mtime": 1784053151.4641762,
+    "ast_hash": "f7201e46b78dba0460ad3b62170693df",
     "semantic_hash": ""
   },
   "src/App.test.ts": {
