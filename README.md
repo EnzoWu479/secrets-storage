@@ -62,16 +62,32 @@ Pré-requisitos no Windows: Node.js 24 LTS, Rust stable com target MSVC, Microso
 ```powershell
 pnpm install --frozen-lockfile
 pnpm check
-pnpm tauri dev
+pnpm dev
 ```
 
 O scaffold Tauri 2, Vue 3, TypeScript e Tailwind está executável, mas contém apenas uma tela de fundação. Ainda não existe armazenamento de segredos nem implementação criptográfica.
+
+Use `pnpm dev` para executar o aplicativo via Tauri e `pnpm build` para gerar o build desktop. Os comandos do frontend são hooks internos do Tauri, não scripts públicos.
+
+## Distribuição e atualizações
+
+O workflow de release é acionado somente por uma tag `vX.Y.Z`, valida a versão nos três manifests e se o commit pertence à `main`, executa todos os gates e cria uma GitHub Release em **draft**. O pacote primário é NSIS; `latest.json` e a assinatura do updater são gerados no mesmo build.
+
+Antes da primeira release, crie no GitHub o environment protegido `release` e configure nele:
+
+- variável `TAURI_UPDATER_PUBLIC_KEY` com a chave pública completa;
+- secrets `TAURI_SIGNING_PRIVATE_KEY` e `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`;
+- proteção de deployment limitada a tags `v*` e, quando disponível, aprovação manual.
+
+Gere o par de chaves fora do repositório com `pnpm tauri signer generate`. Guarde a chave privada e seu backup em armazenamento seguro; nunca adicione a chave privada ao Git. O workflow injeta a configuração do updater apenas durante a release, deixando builds locais sem material de assinatura.
+
+O updater está registrado no core Rust e não concede capability de atualização à WebView. A interface de busca, confirmação e reinício da atualização será implementada como um fluxo Rust controlado antes da primeira distribuição pública. A assinatura Authenticode também permanece um gate obrigatório para publicação pública.
 
 Os próximos gates são:
 
 1. executar os protótipos de segurança que bloqueiam decisões de arquitetura;
 2. definir o formato criptográfico versionado;
-3. implementar a automação de CI;
+3. configurar o environment e as chaves de assinatura no GitHub;
 4. iniciar o cofre local somente após fechar as decisões bloqueadoras.
 
 ## Documentação

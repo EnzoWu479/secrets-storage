@@ -231,7 +231,7 @@ Attestation prova a origem do build, não que o binário seja seguro. Authentico
 
 ## 12. Configuração pendente no GitHub
 
-Esta política pode ser aplicada assim que o repositório remoto existir:
+Os workflows de CI e release e a configuração do NSIS/updater já existem no repositório. Ainda precisam ser aplicados no GitHub:
 
 - rulesets de `main` e tags `v*`;
 - merge por squash e exclusão automática de branches;
@@ -240,7 +240,7 @@ Esta política pode ser aplicada assim que o repositório remoto existir:
 - immutable releases;
 - permissões mínimas do Actions e allowlist/SHA pinning;
 - secrets de assinatura e backup offline;
-- workflow de CI, workflow de release e configuração das release notes.
+- configuração das release notes e validação da primeira execução do workflow em draft.
 
 ## 13. Referências oficiais
 
