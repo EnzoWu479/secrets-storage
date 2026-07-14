@@ -83,6 +83,14 @@ Gere o par de chaves fora do repositório com `pnpm tauri signer generate`. Guar
 
 O updater está registrado no core Rust e não concede capability de atualização à WebView. A interface de busca, confirmação e reinício da atualização será implementada como um fluxo Rust controlado antes da primeira distribuição pública. A assinatura Authenticode também permanece um gate obrigatório para publicação pública.
 
+Para iniciar uma Release PR a partir de uma `main` limpa e sincronizada:
+
+```powershell
+.\scripts\new-release.ps1 -Version 0.1.0-alpha.1
+```
+
+O script valida SemVer e versões já existentes, cria `chore/release-v<versão>` e sincroniza `package.json`, `tauri.conf.json`, `Cargo.toml` e `Cargo.lock`. Ele não cria tag, commit, push ou release; o changelog continua sujeito a revisão humana.
+
 Os próximos gates são:
 
 1. executar os protótipos de segurança que bloqueiam decisões de arquitetura;
