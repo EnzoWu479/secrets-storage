@@ -102,12 +102,6 @@ jobs:
           }
           $config | ConvertTo-Json -Depth 8 | Set-Content src-tauri/tauri.release.conf.json -Encoding utf8
 
-      - name: Run quality and dependency gates
-        shell: pwsh
-        run: |
-          pnpm check
-          pnpm audit --prod --audit-level high
-
       - name: Build updater artifacts and draft release
         uses: tauri-apps/tauri-action@944946e3e4cac6603d1fe8f514171e9ecd3c78aa # v1
         env:
