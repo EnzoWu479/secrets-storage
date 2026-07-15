@@ -3,5 +3,5 @@
   "identifier": "default",
   "description": "Main window without privileged commands during the foundation phase",
   "windows": ["main"],
-  "permissions": []
+  "permissions": ["core:app:allow-version"]
 }

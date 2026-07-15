@@ -117,7 +117,7 @@ jobs:
           uploadUpdaterJson: true
           updaterJsonPreferNsis: true
           tauriScript: pnpm tauri
-          args: --bundles nsis --config src-tauri/tauri.release.conf.json
+          args: --bundles nsis --features updater --config src-tauri/tauri.release.conf.json
 
       - name: Generate checksums
         id: checksums
