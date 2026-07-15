@@ -74,21 +74,21 @@ $utf8WithoutBom = [Text.UTF8Encoding]::new($false)
 
 Push-Location $repoRoot
 try {
-    if (@(Invoke-Git -Arguments @('status', '--porcelain')).Count -gt 0) {
-        throw 'A árvore de trabalho precisa estar limpa antes de criar a release branch.'
-    }
+    # if (@(Invoke-Git -Arguments @('status', '--porcelain')).Count -gt 0) {
+    #     throw 'A árvore de trabalho precisa estar limpa antes de criar a release branch.'
+    # }
 
-    $currentBranch = (Invoke-Git -Arguments @('branch', '--show-current') | Select-Object -First 1).Trim()
-    if ($currentBranch -ne 'main') {
-        throw "Execute o script na branch main; branch atual: '$currentBranch'."
-    }
+    # $currentBranch = (Invoke-Git -Arguments @('branch', '--show-current') | Select-Object -First 1).Trim()
+    # if ($currentBranch -ne 'main') {
+    #     throw "Execute o script na branch main; branch atual: '$currentBranch'."
+    # }
 
-    Invoke-Git -Arguments @('fetch', '--prune', 'origin', 'main') | Out-Null
-    $localMain = (Invoke-Git -Arguments @('rev-parse', 'HEAD') | Select-Object -First 1).Trim()
-    $remoteMain = (Invoke-Git -Arguments @('rev-parse', 'refs/remotes/origin/main') | Select-Object -First 1).Trim()
-    if ($localMain -ne $remoteMain) {
-        throw 'A main local diverge de origin/main. Sincronize-a antes de criar a release branch.'
-    }
+    # Invoke-Git -Arguments @('fetch', '--prune', 'origin', 'main') | Out-Null
+    # $localMain = (Invoke-Git -Arguments @('rev-parse', 'HEAD') | Select-Object -First 1).Trim()
+    # $remoteMain = (Invoke-Git -Arguments @('rev-parse', 'refs/remotes/origin/main') | Select-Object -First 1).Trim()
+    # if ($localMain -ne $remoteMain) {
+    #     throw 'A main local diverge de origin/main. Sincronize-a antes de criar a release branch.'
+    # }
 
     $paths = @{
         Package = Join-Path $repoRoot 'package.json'

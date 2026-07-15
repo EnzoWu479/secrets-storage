@@ -1,6 +1,6 @@
 [package]
 name = "secrets-storage"
-version = "0.1.6"
+version = "0.1.7"
 description = "Local-first, zero-knowledge secrets vault"
 authors = ["Enzo Yuji Wu"]
 edition = "2021"
@@ -17,9 +17,15 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
 
+[features]
+# Enabled only by the release pipeline, which also injects the
+# `plugins.updater` overlay (pubkey/endpoints). Local dev/build must NOT
+# register the updater plugin, otherwise it panics on the missing config.
+updater = ["dep:tauri-plugin-updater"]
+
 [dependencies]
 serde_json = "1"
 tauri = { version = "2", features = [] }
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
-tauri-plugin-updater = "2"
+tauri-plugin-updater = { version = "2", optional = true }
