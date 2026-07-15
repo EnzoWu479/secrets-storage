@@ -1,10 +1,23 @@
 <script setup lang="ts">
+import { onMounted, ref } from "vue";
+import { getVersion } from "@tauri-apps/api/app";
+
 const foundations = [
   "Tauri 2 com core Rust",
   "Vue 3 e TypeScript",
   "Tailwind CSS empacotado localmente",
   "CSP e capabilities mínimas",
 ];
+
+const version = ref("");
+
+onMounted(async () => {
+  try {
+    version.value = await getVersion();
+  } catch {
+    version.value = "";
+  }
+});
 </script>
 
 <template>
@@ -29,6 +42,10 @@ const foundations = [
       <aside class="mt-8 rounded-xl border border-amber-400/30 bg-amber-400/10 p-4 text-sm leading-6 text-amber-100">
         Não use esta versão para armazenar dados sensíveis. Os controles criptográficos e seus testes ainda serão implementados.
       </aside>
+
+      <footer v-if="version" class="mt-8 text-right text-xs text-slate-500">
+        Versão {{ version }}
+      </footer>
     </section>
   </main>
 </template>
