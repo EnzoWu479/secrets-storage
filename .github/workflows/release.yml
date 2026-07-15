@@ -132,11 +132,11 @@ jobs:
           "$hash  $($installer.Name)" | Set-Content SHA256SUMS -Encoding ascii
           "installer=$($installer.FullName)" >> $env:GITHUB_OUTPUT
 
-      - name: Upload checksums to draft release
+      - name: Upload installer and checksums to draft release
         shell: pwsh
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload $env:GITHUB_REF_NAME SHA256SUMS --clobber
+        run: gh release upload $env:GITHUB_REF_NAME "${{ steps.checksums.outputs.installer }}" SHA256SUMS --clobber
 
       - name: Attest installer provenance
         uses: actions/attest-build-provenance@43d14bc2b83dec42d39ecae14e916627a18bb661 # v3
