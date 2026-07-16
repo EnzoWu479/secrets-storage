@@ -11,8 +11,12 @@
   - **T2 `crypto::kdf`:** `KdfParams { mem_kib, iters, parallelism }` + `CANDIDATE` (64 MiB/3/1, `⚠️ PT-01`) + `validate()` com limites defensivos (`MIN/MAX_*`) que rejeitam **antes de alocar**; `derive_kek` via Argon2id (Algorithm::Argon2id, V0x13). Testes: determinismo, salts/senhas distintos, params fora do limite.
   - **T3 `crypto::keys`:** `generate_root_key` (bytes injetáveis), `derive_content_key(root, epoch)` e `derive_session_wrap_key(gmk, uuid)` via HKDF-SHA256 com rótulos `ssv:content:v1:` / `ssv:session-wrap:v1:`. Testes: determinismo, distinção por época/uuid/propósito.
   - **T4 `crypto::aead`:** `seal`/`open` (XChaCha20-Poly1305, nonce 24 bytes injetável, AAD) + `wrap_key`/`unwrap_key` sobre `Key32` (buffer intermediário zeroizado). Testes: roundtrip, adulteração de ct/tag/nonce/aad, chave errada.
-- **T5–T8:** ⬜ não iniciadas.
-- **Próximo passo:** Fase 3 — `crypto::{keyring,envelope}` (T5/T6).
+- **Fase 3 — Envelopes:** ✅ **implementada e gate verde** (`pnpm check:rust`, 39 testes).
+  - **T5 `crypto::keyring`:** `KeyringHeader`/`KeyringEnvelope` (CBOR, header opaco como AAD); `create_keyring` (gKEK←Argon2id(GMP,salt_global); `wrapped_gmk=AEAD(gKEK,GMK,aad=header)`), `unwrap_gmk`, `change_gmp` (reenvolve a **mesma** GMK). Testes: create→unwrap, GMP errada, change_gmp preserva GMK, adulteração de header, magic inválido, versão superior fail-closed.
+  - **T6 `crypto::envelope`:** `Header`/`VaultEnvelope` (CBOR, header opaco como AAD); `create_vault`/`unlock`/`rewrap` com wrap condicional por `auth_mode` (`own`: KEK=Argon2id; `global`: K_sessao=HKDF(GMK,uuid)); `SessionContent { content_format, secrets: [] }`. Fail-closed em versão superior; campos desconhecidos do header preservados (bytes opacos). Testes: roundtrip own/global, senha/GMK errada, adulteração de cada campo do header, rebaixamento own→global, `rewrap` (troca de senha e alternância de modo), migração, magic, campos desconhecidos.
+  - **Infra:** `crypto::codec` (privado) — helpers `to_cbor`/`from_cbor`, DTO `KdfDescriptor` e `WrapField` compartilhados por keyring/envelope. Header carregado como bytes CBOR opacos → AAD estável e forward-compat de campos desconhecidos.
+- **T7–T8:** ⬜ não iniciadas.
+- **Próximo passo:** Fase 4 — `crypto::vectors` (T7): vetores determinísticos + adulteração.
 
 ---
 

@@ -9,8 +9,11 @@
 //! zeroizáveis ([`secret::Key32`]); nada de chave/senha cruza o IPC.
 
 pub mod aead;
+mod codec;
+pub mod envelope;
 pub mod error;
 pub mod kdf;
+pub mod keyring;
 pub mod keys;
 pub mod secret;
 

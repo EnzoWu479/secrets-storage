@@ -1,11 +1,18 @@
 # State
 
 **Last Updated:** 2026-07-16
-**Current Work:** Backend cripto do M0 (`crypto-format`) em andamento. **Fase 1 (T1) e Fase 2 (T2/T3/T4) concluídas com gate `pnpm check:rust` verde** (21 testes): `crypto::{kdf,keys,aead}` implementados — Argon2id (KEK), HKDF-SHA256 (subchaves/K_sessao) e XChaCha20-Poly1305 (seal/open, wrap/unwrap). Próximo passo: Fase 3 — `crypto::{keyring,envelope}` (T5/T6). App funcional frontend-only (AD-023) segue como placeholder inseguro em paralelo.
+**Current Work:** Backend cripto do M0 (`crypto-format`) em andamento. **Fases 1–3 concluídas com gate `pnpm check:rust` verde** (39 testes): `crypto::{kdf,keys,aead,keyring,envelope}` (+`codec` interno) implementados — Argon2id, HKDF-SHA256, XChaCha20-Poly1305, keyring global (GMP→gKEK→GMK) e envelope de sessão versionado com `auth_mode` na AAD, `rewrap` e migração fail-closed. Próximo passo: Fase 4 — `crypto::vectors` (T7). App funcional frontend-only (AD-023) segue como placeholder inseguro em paralelo.
 
 ---
 
 ## Recent Decisions (Last 60 days)
+
+### AD-026: Fase 3 do backend cripto — envelopes `keyring`/`envelope` (2026-07-16)
+
+**Decision:** Implementadas as duas tarefas da Fase 3 do `crypto-format`, com gate `pnpm check:rust` verde (39 testes). **T5 `crypto::keyring`:** keyring global CBOR (`create_keyring`/`unwrap_gmk`/`change_gmp`) — gKEK←Argon2id(GMP,salt_global) envolve a GMK aleatória; troca de GMP reenvolve a mesma GMK. **T6 `crypto::envelope`:** cofre de sessão CBOR versionado (`create_vault`/`unlock`/`rewrap`) com wrap condicional por `auth_mode` (own=Argon2id, global=HKDF(GMK,uuid)), fail-closed em versão superior e preservação de campos desconhecidos. Infra `crypto::codec` (helpers `to_cbor`/`from_cbor` + DTOs `KdfDescriptor`/`WrapField`).
+**Reason:** Dar prosseguimento ao plano aprovado em `tasks.md` (Fase 3 após a Fase 2).
+**Trade-off / desvios anotados:** (1) Header carregado como **bytes CBOR opacos** dentro do envelope, usado diretamente como AAD — garante AAD estável e forward-compat de campos desconhecidos (FMT-03) sem re-serialização. (2) Em `auth_mode = global`, os campos `salt`/`kdf` do header são placeholder (zeros + candidato), autenticados mas não usados. (3) `rewrap` reautentica (re-sela) o payload sob o novo header, pois a AAD é o header completo. (4) `secrets` fica como `Vec<ciborium::value::Value>` para não fixar o modelo de segredos.
+**Impact / gate aberto:** Continua implementando o design **candidato**; **não** fecha o gate D-05. Falta a Fase 4 (vetores T7) e a Fase 5 (plano de revisão T8). Parâmetros PT-01/PT-02 seguem provisórios.
 
 ### AD-025: Fase 2 do backend cripto — primitivos `kdf`/`keys`/`aead` (2026-07-16)
 
