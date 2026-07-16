@@ -2,7 +2,7 @@
 
 **Design:** [design.md](./design.md)
 **Spec:** [spec.md](./spec.md)
-**Status:** In Progress
+**Status:** Complete (design candidato — pendente de revisão independente / gate D-05)
 
 ## Execution Log
 
@@ -15,8 +15,9 @@
   - **T5 `crypto::keyring`:** `KeyringHeader`/`KeyringEnvelope` (CBOR, header opaco como AAD); `create_keyring` (gKEK←Argon2id(GMP,salt_global); `wrapped_gmk=AEAD(gKEK,GMK,aad=header)`), `unwrap_gmk`, `change_gmp` (reenvolve a **mesma** GMK). Testes: create→unwrap, GMP errada, change_gmp preserva GMK, adulteração de header, magic inválido, versão superior fail-closed.
   - **T6 `crypto::envelope`:** `Header`/`VaultEnvelope` (CBOR, header opaco como AAD); `create_vault`/`unlock`/`rewrap` com wrap condicional por `auth_mode` (`own`: KEK=Argon2id; `global`: K_sessao=HKDF(GMK,uuid)); `SessionContent { content_format, secrets: [] }`. Fail-closed em versão superior; campos desconhecidos do header preservados (bytes opacos). Testes: roundtrip own/global, senha/GMK errada, adulteração de cada campo do header, rebaixamento own→global, `rewrap` (troca de senha e alternância de modo), migração, magic, campos desconhecidos.
   - **Infra:** `crypto::codec` (privado) — helpers `to_cbor`/`from_cbor`, DTO `KdfDescriptor` e `WrapField` compartilhados por keyring/envelope. Header carregado como bytes CBOR opacos → AAD estável e forward-compat de campos desconhecidos.
-- **T7–T8:** ⬜ não iniciadas.
-- **Próximo passo:** Fase 4 — `crypto::vectors` (T7): vetores determinísticos + adulteração.
+- **Fase 4 — Vetores:** ✅ **implementada e gate verde**. `crypto::vectors` (`#[cfg(test)]`): vetores golden determinísticos com entradas fixas (params reduzidos, salts/nonces/rands constantes) → saídas hex esperadas para `gKEK`, `KEK_propria`, `K_sessao`, `content_key`, ciphertext AEAD e os **envelopes serializados completos** (keyring, vault own/global); recuperação (`unwrap_gmk`/`unlock`) e vetores de adulteração (1 bit no ciphertext ⇒ rejeição autenticada).
+- **Fase 5 — Plano de revisão:** ✅ `review-plan.md` criado (escopo, entregáveis, critérios da revisão independente; referencia os vetores de T7 e os pontos PT-01/PT-02/D-05).
+- **Feature `crypto-format` (fatia Sessões + desbloqueio): ✅ COMPLETA.** Gate `pnpm check:rust` verde, **53 testes**. Segue como **design candidato** — não fecha o gate D-05 nem fixa PT-01/PT-02; a revisão independente (review-plan.md) é o próximo marco fora desta fatia.
 
 ---
 

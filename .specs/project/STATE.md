@@ -1,11 +1,18 @@
 # State
 
 **Last Updated:** 2026-07-16
-**Current Work:** Backend cripto do M0 (`crypto-format`) em andamento. **Fases 1–3 concluídas com gate `pnpm check:rust` verde** (39 testes): `crypto::{kdf,keys,aead,keyring,envelope}` (+`codec` interno) implementados — Argon2id, HKDF-SHA256, XChaCha20-Poly1305, keyring global (GMP→gKEK→GMK) e envelope de sessão versionado com `auth_mode` na AAD, `rewrap` e migração fail-closed. Próximo passo: Fase 4 — `crypto::vectors` (T7). App funcional frontend-only (AD-023) segue como placeholder inseguro em paralelo.
+**Current Work:** Backend cripto do M0 (`crypto-format`, fatia Sessões + desbloqueio) **COMPLETO** — todas as 5 fases (T1–T8) com gate `pnpm check:rust` verde (**53 testes**): `crypto::{kdf,keys,aead,keyring,envelope,vectors}` (+`codec` interno) + `review-plan.md`. Segue como **design candidato**: não fecha o gate D-05 (modelo de ameaças) nem fixa PT-01/PT-02; a revisão independente descrita em `crypto-format/review-plan.md` é o próximo marco. App funcional frontend-only (AD-023) segue como placeholder inseguro em paralelo. Comandos Tauri / orquestração de app-unlock ficam para a feature `local-sessions`.
 
 ---
 
 ## Recent Decisions (Last 60 days)
+
+### AD-027: Fases 4–5 do backend cripto — vetores e plano de revisão; fatia completa (2026-07-16)
+
+**Decision:** Concluídas as duas últimas fases do `crypto-format`, fechando a fatia. **T7 `crypto::vectors`** (`#[cfg(test)]`): vetores golden determinísticos (entradas fixas → saídas hex esperadas para gKEK/KEK/K_sessao/content_key/AEAD e os envelopes serializados completos), recuperação e adulteração (1 bit ⇒ rejeição autenticada). **T8 `review-plan.md`**: escopo/entregáveis/critérios da revisão criptográfica independente. Gate `pnpm check:rust` verde (53 testes).
+**Reason:** Usuário pediu para "continuar fazendo todas as fases até o fim".
+**Trade-off / desvios anotados:** (1) Os vetores golden foram capturados executando o próprio código com entradas fixas e fixados como constantes de regressão — dependem de PT-01/PT-02 e do layout CBOR e mudarão se estes forem revisados (comportamento esperado). (2) Adulteração no nível dos vetores inverte 1 bit do último byte (tag) do envelope serializado; a mutação campo-a-campo do header já é coberta nos testes de `keyring`/`envelope`.
+**Impact / gate aberto:** A fatia Sessões + desbloqueio está **implementada e testada como candidato**. **Continua NÃO fechando o gate D-05**: `review-plan.md` define o caminho para a revisão independente que precede a promoção a base estável e a fixação de PT-01/PT-02.
 
 ### AD-026: Fase 3 do backend cripto — envelopes `keyring`/`envelope` (2026-07-16)
 

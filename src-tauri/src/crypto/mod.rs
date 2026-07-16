@@ -17,5 +17,8 @@ pub mod keyring;
 pub mod keys;
 pub mod secret;
 
+#[cfg(test)]
+mod vectors;
+
 pub use error::{CryptoError, Result};
 pub use secret::Key32;
