@@ -1,16 +1,54 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Segoe UI", system-ui, sans-serif;
+  --font-sans: "Inter", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Cascadia Code", "Consolas", monospace;
+
+  --color-app: #0b0e14;
+  --color-surface: #141925;
+  --color-elevated: #1c2333;
+  --color-divider: #2a3242;
+  --color-primary: #e6eaf2;
+  --color-secondary: #9aa4b8;
+  --color-muted: #5a6273;
+  --color-accent: #6d5ef5;
+  --color-accent-hover: #5b4ce0;
+  --color-success: #2dd4a7;
+  --color-warning: #f5b84b;
+  --color-danger: #f0616d;
+
+  --radius-control: 8px;
+  --radius-card: 12px;
+  --radius-modal: 16px;
+  --radius-pill: 999px;
 }
 
 @layer base {
   :root {
+    --color-accent-soft: rgba(109, 94, 245, 0.1);
+
     font-family: var(--font-sans);
     color-scheme: dark;
     font-synthesis: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
+  }
+
+  .theme-light {
+    --color-app: #f5f6fa;
+    --color-surface: #ffffff;
+    --color-elevated: #ffffff;
+    --color-divider: #e2e5ec;
+    --color-primary: #171b24;
+    --color-secondary: #5a6273;
+    --color-muted: #a8aebc;
+    --color-accent: #5b4ce0;
+    --color-success: #12b588;
+    --color-warning: #d9911f;
+    --color-danger: #e0455a;
+    --color-accent-soft: rgba(91, 76, 224, 0.08);
+
+    color-scheme: light;
   }
 
   body {

@@ -1,25 +1,39 @@
-import { mount } from "@vue/test-utils";
-import { describe, expect, it } from "vitest";
+import { flushPromises, mount } from "@vue/test-utils";
+import { beforeEach, describe, expect, it } from "vitest";
 
 import App from "./App.vue";
+import { useVault } from "./stores/vault";
+import { router } from "./test-setup";
+
+const vault = useVault();
+
+beforeEach(() => {
+  vault._resetForTests();
+});
 
 describe("App", () => {
-  it("identifica a fundação sem anunciar um cofre utilizável", () => {
-    const wrapper = mount(App);
+  it("no primeiro uso, o gate leva à criação da senha global", async () => {
+    await router.push("/");
+    await router.isReady();
+    await flushPromises();
 
-    expect(wrapper.get("h1").text()).toBe("Fundação executável pronta");
-    expect(wrapper.text()).toContain("não manipula segredos reais");
-    expect(wrapper.text()).toContain("Não use esta versão para armazenar dados sensíveis");
+    const wrapper = mount(App);
+    await flushPromises();
+
+    expect(router.currentRoute.value.name).toBe("create-password");
+    expect(wrapper.get("h1").text()).toBe("Crie sua senha mestra");
   });
 
-  it("lista os quatro pilares técnicos aprovados", () => {
-    const items = mount(App).findAll("li").map((item) => item.text());
+  it("com senha global e app desbloqueado, permite chegar às sessões", async () => {
+    await vault.createGlobalPassword("senha-global-123");
 
-    expect(items).toEqual([
-      "Tauri 2 com core Rust",
-      "Vue 3 e TypeScript",
-      "Tailwind CSS empacotado localmente",
-      "CSP e capabilities mínimas",
-    ]);
+    await router.push("/sessions");
+    await flushPromises();
+
+    const wrapper = mount(App);
+    await flushPromises();
+
+    expect(router.currentRoute.value.name).toBe("sessions");
+    expect(wrapper.text()).toContain("Sessões");
   });
 });
