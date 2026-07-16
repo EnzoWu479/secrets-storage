@@ -8,7 +8,10 @@
 //! Fronteira de segurança: todo material de chave vive aqui, em tipos
 //! zeroizáveis ([`secret::Key32`]); nada de chave/senha cruza o IPC.
 
+pub mod aead;
 pub mod error;
+pub mod kdf;
+pub mod keys;
 pub mod secret;
 
 pub use error::{CryptoError, Result};

@@ -6,10 +6,13 @@
 
 ## Execution Log
 
-- **T1 — Fundação:** ✅ implementada e **compila**. `Cargo.toml` com as 10 crates candidatas (resolveram/baixaram sem conflito); `src/crypto/{mod,error,secret}.rs` criados; `pub mod crypto;` em `lib.rs`. `Key32` zeroizável (Drop + `zeroize`), `CryptoError` (thiserror, sem vazar segredo). `cargo test crypto::` → **1 teste passa** (`Key32`).
-  - ⚠️ **Pendente de fechar T1:** rodar o gate completo `pnpm check:rust` (fmt + clippy `-D warnings`). O build emitiu um aviso `linker_messages` (nota do linker Windows sobre `.dll.lib/.exp`) — verificar se `-D warnings` o trata como erro e, se sim, decidir tratamento (allow no crate ou ignorar por ser mensagem de linker, não lint de código).
-- **T2–T8:** ⬜ não iniciadas.
-- **Próximo passo:** Fase 2 — `crypto::{kdf,keys,aead}` (T2/T3/T4).
+- **T1 — Fundação:** ✅ implementada e **gate verde**. `Cargo.toml` com as 10 crates candidatas (resolveram/baixaram sem conflito); `src/crypto/{mod,error,secret}.rs` criados; `pub mod crypto;` em `lib.rs`. `Key32` zeroizável (Drop + `zeroize`), `CryptoError` (thiserror, sem vazar segredo). `pnpm check:rust` completo passa (fmt + clippy `-D warnings` + testes). O aviso `linker_messages` era específico de Windows; no build Linux o clippy passa limpo.
+- **Fase 2 — Primitivos:** ✅ **implementada e gate verde** (`pnpm check:rust`, 21 testes).
+  - **T2 `crypto::kdf`:** `KdfParams { mem_kib, iters, parallelism }` + `CANDIDATE` (64 MiB/3/1, `⚠️ PT-01`) + `validate()` com limites defensivos (`MIN/MAX_*`) que rejeitam **antes de alocar**; `derive_kek` via Argon2id (Algorithm::Argon2id, V0x13). Testes: determinismo, salts/senhas distintos, params fora do limite.
+  - **T3 `crypto::keys`:** `generate_root_key` (bytes injetáveis), `derive_content_key(root, epoch)` e `derive_session_wrap_key(gmk, uuid)` via HKDF-SHA256 com rótulos `ssv:content:v1:` / `ssv:session-wrap:v1:`. Testes: determinismo, distinção por época/uuid/propósito.
+  - **T4 `crypto::aead`:** `seal`/`open` (XChaCha20-Poly1305, nonce 24 bytes injetável, AAD) + `wrap_key`/`unwrap_key` sobre `Key32` (buffer intermediário zeroizado). Testes: roundtrip, adulteração de ct/tag/nonce/aad, chave errada.
+- **T5–T8:** ⬜ não iniciadas.
+- **Próximo passo:** Fase 3 — `crypto::{keyring,envelope}` (T5/T6).
 
 ---
 

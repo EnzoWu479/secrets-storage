@@ -1,11 +1,18 @@
 # State
 
-**Last Updated:** 2026-07-15
-**Current Work:** Backend cripto do M0 (`crypto-format`) iniciado. `tasks.md` criado e aprovado (8 tarefas, 5 fases). **T1 (Fundação) compila e passa 1 teste**; falta rodar o gate completo `pnpm check:rust` (ver aviso `linker_messages`). Fase 2 (`kdf`/`keys`/`aead`) é o próximo passo. App funcional frontend-only (AD-023) segue como placeholder inseguro em paralelo.
+**Last Updated:** 2026-07-16
+**Current Work:** Backend cripto do M0 (`crypto-format`) em andamento. **Fase 1 (T1) e Fase 2 (T2/T3/T4) concluídas com gate `pnpm check:rust` verde** (21 testes): `crypto::{kdf,keys,aead}` implementados — Argon2id (KEK), HKDF-SHA256 (subchaves/K_sessao) e XChaCha20-Poly1305 (seal/open, wrap/unwrap). Próximo passo: Fase 3 — `crypto::{keyring,envelope}` (T5/T6). App funcional frontend-only (AD-023) segue como placeholder inseguro em paralelo.
 
 ---
 
 ## Recent Decisions (Last 60 days)
+
+### AD-025: Fase 2 do backend cripto — primitivos `kdf`/`keys`/`aead` (2026-07-16)
+
+**Decision:** Implementadas as três tarefas paralelas da Fase 2 do `crypto-format`, com gate `pnpm check:rust` verde (fmt + clippy `-D warnings` + 21 testes). **T2 `crypto::kdf`:** `derive_kek` via Argon2id + `KdfParams` com `validate()` que rejeita fora dos limites defensivos (`MIN/MAX_*`) antes de alocar; candidato 64 MiB/3/1 (`⚠️ PT-01`). **T3 `crypto::keys`:** `generate_root_key`, `derive_content_key(epoch)`, `derive_session_wrap_key(uuid)` via HKDF-SHA256 com rótulos `ssv:content:v1:` / `ssv:session-wrap:v1:`. **T4 `crypto::aead`:** `seal`/`open` (XChaCha20-Poly1305, nonce 24 bytes, AAD) + `wrap_key`/`unwrap_key` sobre `Key32`.
+**Reason:** Dar prosseguimento ao plano aprovado em `tasks.md` (Fase 2 é o passo seguinte a T1).
+**Trade-off / desvios anotados:** (1) `seal`/`wrap_key` mantêm assinatura infalível (`-> Vec<u8>`) do design, com `expect` justificado (encrypt só falha além do limite de tamanho da cifra). (2) `unwrap_key` zeroiza o buffer intermediário do material desenvolvido. (3) Ambiente de build Linux exigiu libs GTK do sistema (`libgtk-3-dev` etc.) para o `cargo test` do crate Tauri — não afeta o código.
+**Impact / gate aberto:** Continua implementando o design **candidato**; **não** fecha o gate D-05 (modelo de ameaças reaberto por AD-022). Parâmetros PT-01/PT-02 seguem provisórios. Próximo: Fase 3 (`keyring`/`envelope`).
 
 ### AD-024: Início do backend criptográfico (`crypto-format`) (2026-07-15)
 
