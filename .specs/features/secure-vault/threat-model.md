@@ -1,10 +1,10 @@
 # Modelo de Ameaças — Secrets Storage v1
 
-**Status:** Aprovado como base de design do v1
+**Status:** Aprovado como base — EM REVISÃO para o modelo de senha mestra global (pendente de re-aprovação). Ver [context.md](../ui-screens/context.md) (D-04/D-05).
 
 **Data:** 2026-07-13
 
-**Aprovação:** 2026-07-14 — riscos residuais, limites e protótipos bloqueadores aceitos para orientar o design; a aprovação não declara os controles como implementados.
+**Aprovação:** 2026-07-14 — riscos residuais, limites e protótipos bloqueadores aceitos para orientar o design; a aprovação não declara os controles como implementados. **Reaberta em revisão:** a introdução da senha mestra global (GMP), conforme [context.md](../ui-screens/context.md) (D-04/D-05), reabre pontos anteriormente aprovados (isolamento entre sessões, objetivos, ativos, C-01/C-13 e o raio de exposição de T-AUTH-*) e exige nova aprovação humana antes de voltar a ser base estável de design.
 
 **Escopo:** Windows, Tauri 2, core Rust, frontend Vite/Tailwind, múltiplas sessões locais e sincronização por OneDrive ou Google Drive
 
@@ -14,7 +14,7 @@
 
 ## 1. Resumo executivo
 
-O Secrets Storage v1 deve proteger cada sessão como uma fronteira criptográfica independente. Uma cópia do disco, do arquivo do cofre ou do armazenamento em nuvem não deve revelar senhas mestras, chaves de dados ou segredos sem um ataque offline caro contra a senha daquela sessão. Desbloquear uma sessão não pode desbloquear outra.
+O Secrets Storage v1 deve proteger cada sessão como uma fronteira criptográfica independente. Uma cópia do disco, do arquivo do cofre ou do armazenamento em nuvem não deve revelar senhas mestras, chaves de dados ou segredos sem um ataque offline caro contra a senha daquela sessão. Desbloquear uma sessão com senha própria não pode desbloquear outra. Essa garantia de não desbloqueio transitivo vale integralmente para sessões com senha própria (`auth_mode = own`); sessões globais (`auth_mode = global`) compartilham deliberadamente o domínio de confiança da senha mestra global (GMP) e são abertas em conjunto quando a GMP é informada.
 
 O provedor de nuvem é tratado como armazenamento hostil: pode ler, apagar, atrasar, repetir, substituir ou apresentar versões antigas dos blobs. Confidencialidade e integridade não dependem do provedor. Disponibilidade, preservação absoluta do histórico e detecção universal de rollback em uma instalação sem estado anterior não são garantidas.
 
@@ -48,7 +48,7 @@ Este documento combina uma análise centrada em dados, inspirada no NIST SP 800-
 ## 3. Objetivos de segurança
 
 1. Manter confidencialidade e integridade dos segredos persistidos por sessão.
-2. Isolar senhas, chaves e estados de bloqueio entre sessões.
+2. Isolar senhas, chaves e estados de bloqueio entre sessões, distinguindo dois regimes: isolamento total para sessões com senha própria (`auth_mode = own`) e domínio de confiança compartilhado da GMP para sessões globais (`auth_mode = global`), que compartilham deliberadamente estado de desbloqueio.
 3. Nunca persistir a senha mestra e nunca usar um verificador barato que facilite ataque offline.
 4. Detectar alteração de conteúdo e metadados protegidos antes de usar os dados.
 5. Evitar perda silenciosa durante gravação, sincronização ou resolução de conflitos.
@@ -56,13 +56,15 @@ Este documento combina uma análise centrada em dados, inspirada no NIST SP 800-
 7. Autorizar toda operação privilegiada no core Rust, independentemente do estado da interface.
 8. Autenticar atualizações e rejeitar downgrade conforme uma política monotônica.
 9. Explicar ao usuário as proteções, dependências e limitações sem garantias enganosas.
+10. Proteger a senha mestra global (GMP) e a global master key (GMK) como raiz do domínio de confiança global, já que seu comprometimento expõe todas as sessões globais de uma vez.
 
 ## 4. Ativos
 
 | ID | Ativo | Sensibilidade |
 | --- | --- | --- |
-| A-01 | Senha mestra de cada sessão | Crítica; nunca persistida. |
+| A-01 | Senha mestra global (GMP) e senhas próprias de sessões opt-out | Crítica; nunca persistidas. A GMP é raiz do domínio global; comprometê-la expõe todas as sessões globais. |
 | A-02 | Chave raiz, KEKs, DEKs e subchaves de uma sessão | Crítica; acesso equivale ao conteúdo protegido. |
+| A-11 | Global master key (GMK), gKEK e keyring global | Crítica; a GMK envolve as root_keys de todas as sessões globais e nunca é persistida em claro. Acesso equivale ao conteúdo de todas as sessões globais. |
 | A-03 | Segredos em plaintext | Crítica. |
 | A-04 | Cofre local, blobs remotos e metadados autenticados | Alta; ciphertext ainda permite ataque offline e análise de volume. |
 | A-05 | Plaintext transitório em memória, UI e clipboard | Crítica e efêmera. |
@@ -77,10 +79,10 @@ Este documento combina uma análise centrada em dados, inspirada no NIST SP 800-
 | ID | Adversário | Capacidades consideradas |
 | --- | --- | --- |
 | ADV-01 | Pessoa com acesso casual | Usa tela, teclado, clipboard e arquivos acessíveis na conta. |
-| ADV-02 | Ladrão com dispositivo desligado | Copia disco, cofre e dados de hibernação; realiza ataque offline. |
+| ADV-02 | Ladrão com dispositivo desligado | Copia disco, cofre e dados de hibernação; realiza ataque offline. Com a GMP, passa a ter um alvo de maior valor: quebrá-la offline expõe todas as sessões globais de uma vez. |
 | ADV-03 | Atacante físico tecnicamente capacitado | Manipula boot, periféricos, DMA ou hardware e pode obter imagens de memória. |
 | ADV-04 | Provedor de nuvem comprometido ou malicioso | Lê, apaga, substitui, reordena e repete blobs e metadados remotos. |
-| ADV-05 | Malware no contexto do usuário | Captura teclado/clipboard/tela e tenta ler memória ou invocar IPC. |
+| ADV-05 | Malware no contexto do usuário | Captura teclado/clipboard/tela e tenta ler memória ou invocar IPC. Capturar a GMP (ex.: keylogger) passa a ser alvo de maior valor: expõe todas as sessões globais simultaneamente. |
 | ADV-06 | Administrador local, kernel ou firmware comprometido | Depura processos, lê memória e altera o sistema operacional. |
 | ADV-07 | Atacante de rede | Intercepta OAuth, downloads e tráfego quando controles de transporte falham. |
 | ADV-08 | Atacante da cadeia de software | Compromete dependência, pipeline, conta ou chave de assinatura. |
@@ -130,8 +132,10 @@ O código-fonte separado do diagrama está em [trust-boundaries-flowchart.mmd](.
 | T-AUTH-01 | Elevação | Atacante copia o cofre e testa senhas sem sofrer o atraso da UI. | Crítico | C-01, C-02, C-03, C-17 | Parcial: senha fraca continua vulnerável; parâmetros pendentes de benchmark. |
 | T-AUTH-02 | Divulgação | Dica contém parte da senha ou contexto sensível. | Alto | C-04 | Parcial: metadado é deliberadamente visível e sincronizado. |
 | T-AUTH-03 | Elevação | Tentativas interativas repetidas contra uma sessão. | Alto | C-02, C-04 | Mitigado localmente; atraso não impede ataque offline. |
-| T-AUTH-04 | Elevação | Desbloqueio, busca ou comando de uma sessão atravessa a fronteira de outra. | Crítico | C-01, C-10, C-11 | Mitigado mediante testes de autorização por sessão. |
+| T-AUTH-04 | Elevação | Desbloqueio, busca ou comando de uma sessão atravessa a fronteira de outra. | Crítico | C-01, C-10, C-11 | Entre sessões globais o acesso conjunto é por design (D-03) e não é violação; cruzar para uma sessão com senha própria sem a senha dela continua sendo ameaça a mitigar, verificada por testes de autorização por sessão. |
 | T-AUTH-05 | Alteração | Atacante desativa bloqueio, muda modo somente leitura ou exclui sessão. | Alto | C-10, C-13 | Parcial: host comprometido pode alterar o aplicativo; mudanças sensíveis exigem senha. |
+| T-AUTH-06 | Elevação | Comprometer ou adivinhar a GMP expõe todas as sessões globais simultaneamente. | Crítico | C-01 (revisado), C-02, C-04, C-21 | Parcial/Aceito: por design a GMP abre todas as sessões globais; orientar GMP forte e uso de senha própria para sessões sensíveis. O raio de exposição é maior que no modelo por-sessão. |
+| T-AUTH-07 | Elevação | Rebaixar `auth_mode` (own→global) para abrir uma sessão própria com a GMK. | Crítico | C-01 (revisado), C-05, C-21 | Mitigado: `auth_mode` é autenticado na AAD do header; alterá-lo sem a chave correta quebra a autenticação e impede o rebaixamento. |
 
 ### 8.2 Memória, UI, clipboard e eventos do Windows
 
@@ -192,7 +196,7 @@ O código-fonte separado do diagrama está em [trust-boundaries-flowchart.mmd](.
 
 | ID | Controle e requisito mínimo |
 | --- | --- |
-| C-01 | Uma chave raiz aleatória e independente por sessão; nenhum desbloqueio ou cache de uma sessão concede acesso a outra. |
+| C-01 | Uma chave raiz aleatória e independente por sessão. Sessões com senha própria (`auth_mode = own`) mantêm isolamento total: nenhum desbloqueio ou cache de uma delas concede acesso a outra. Sessões globais (`auth_mode = global`) compartilham deliberadamente o domínio de confiança da GMP e são abertas em conjunto no desbloqueio do app (D-03). O `auth_mode` autenticado na AAD impede rebaixar uma sessão própria para o modo global. |
 | C-02 | KDF memory-hard com salt aleatório por sessão, parâmetros e versão no envelope, limites defensivos e benchmark em hardware suportado. Argon2id é candidato, não decisão final. |
 | C-03 | Envelope de chaves: a KDF produz uma KEK que envolve a chave raiz aleatória; subchaves separadas por propósito, sessão, versão e época. Não armazenar verificador barato. |
 | C-04 | Comprimento mínimo, indicador de força, atraso progressivo local, dica sob demanda com aviso de exposição, senha atual para troca e lembrete de ausência de recuperação. |
@@ -204,7 +208,7 @@ O código-fonte separado do diagrama está em [trust-boundaries-flowchart.mmd](.
 | C-10 | Senhas, chaves, tokens e operações criptográficas permanecem no core Rust; comandos de alto nível revalidam estado desbloqueado, sessão, modo somente leitura, IDs e limites. |
 | C-11 | Bundle Vite/Tailwind inteiramente local na WebView, CSP estrita sem CDN/`unsafe-eval`, capabilities e plugins mínimos, DevTools desligado em release e nenhum evento global com plaintext. |
 | C-12 | Buffers sensíveis de vida curta, sem cópias desnecessárias, zeroização verificável, tentativa explícita de impedir paginação e descarte completo ao bloquear/fechar. Falhas de `VirtualLock` são tratadas. |
-| C-13 | Cronômetro independente por sessão; padrão de 15 min; somente interação intencional nela reinicia. Bloqueio/suspensão do Windows ativos por padrão e configuráveis individualmente; fechar bloqueia todas. “Nunca” exige confirmação. |
+| C-13 | Bloqueio do app inteiro pela GMP (tela de desbloqueio global; sem a GMP nada é acessível) somado ao bloqueio por sessão. Cronômetro independente por sessão; padrão de 15 min; somente interação intencional nela reinicia. Bloqueio/suspensão do Windows ativos por padrão e configuráveis individualmente; fechar bloqueia todas e trava o app. Bloquear o app descarta a GMK e fecha todas as sessões globais; sessões com senha própria seguem seu próprio estado. “Nunca” exige confirmação. |
 | C-14 | Clipboard com prazo configurável, padrão de 5 min, “Limpar agora”, limpeza apenas se o conteúdo ainda for o copiado pelo app e mensagem honesta quando não houver confirmação. |
 | C-15 | Proibição de segredos, senhas, chaves, tokens e URLs pré-autenticadas em logs, panic, telemetria, temporários e dumps; redaction por allowlist e testes com canários. |
 | C-16 | Updater Tauri com assinatura obrigatória, HTTPS, versão estritamente superior, chave privada fora do repositório/artefatos, pipeline protegido e plano de rotação/revogação. |
@@ -212,6 +216,7 @@ O código-fonte separado do diagrama está em [trust-boundaries-flowchart.mmd](.
 | C-18 | Contrato de exclusão distingue tombstone, histórico, expiração, purge do provedor e sanitização de mídia; nunca promete apagar backups fora do controle do app. |
 | C-19 | Recomendar BitLocker; para ameaça física direcionada, recomendar TPM+PIN e hibernação/desligamento em vez de sleep. TPM/DPAPI podem proteger material do dispositivo, nunca ser a única chave do cofre. |
 | C-20 | Conflitos preservam todas as versões, resolução campo a campo, materialização permanente após 30 dias, aviso nos 7 dias finais e desfazer por 7 dias. |
+| C-21 | Keyring global e proteção da GMP/GMK: KDF memory-hard da gKEK a partir da GMP com salt próprio; `wrapped_gmk = AEAD(gKEK, GMK, aad = header)` com `format_version`, `salt_global`, params de KDF e `aead_id` autenticados; wrap da `root_key` de sessões globais por `HKDF(GMK, session_uuid)` e `auth_mode` autenticado na AAD. Nunca persistir gKEK/GMK em claro; orientar GMP forte e oferecer senha própria para sessões sensíveis. Parâmetros do keyring pendentes de benchmark (PT-01). |
 
 ## 10. Postura contra acesso físico e hardware
 
@@ -237,7 +242,7 @@ TPM pode manter uma chave de dispositivo não exportável e DPAPI pode proteger 
 | --- | --- | --- |
 | PT-01 | Benchmark de KDF | Latência e memória em hardware mínimo, típico e rápido; parâmetros resistentes a DoS; impacto de unlock simultâneo. |
 | PT-02 | Formato e AEAD | Vetores de teste, alteração de cada campo/byte rejeitada, nonce único ou estratégia misuse-resistant revisada. |
-| PT-03 | Hierarquia e isolamento | Desbloquear, bloquear, trocar senha e excluir uma sessão sem acesso ou resíduo nas demais. |
+| PT-03 | Hierarquia e isolamento | Desbloquear, bloquear, trocar senha e excluir uma sessão sem acesso ou resíduo nas demais. No modelo GMP: desbloqueio global abre somente as sessões globais e as sessões com senha própria permanecem fechadas; trocar a GMP re-envolve a mesma GMK sem afetar conteúdos; rebaixar `auth_mode` (own→global) falha por autenticação da AAD; bloquear o app descarta a GMK. |
 | PT-04 | Memória otimizada | Confirmar zeroização em release, tratar falha de lock de páginas e inspecionar cópias em Rust/WebView/IPC. |
 | PT-05 | Eventos Windows | Lock, unlock, sleep, hibernação, shutdown e suspensão crítica; comportamento fail-closed quando possível. |
 | PT-06 | Pagefile/hibernação | Buscar canários após uso, bloqueio, hibernação e crash com e sem BitLocker. |
@@ -265,6 +270,7 @@ Um controle só muda para “Mitigado” quando existir implementação e evidê
 8. Armazenamento e rotação de tokens OAuth nos dois provedores.
 9. Rotação/revogação da chave de assinatura do updater.
 10. Política exata de retenção/purge de históricos e tombstones após os prazos funcionais.
+11. Domínio de confiança da GMP e parâmetros do keyring global: KDF/params da gKEK, formato e versionamento do keyring, e critérios para orientar quando uma sessão deve usar senha própria em vez do modo global.
 
 ## 13. Gates de release e manutenção
 
@@ -273,6 +279,7 @@ Um controle só muda para “Mitigado” quando existir implementação e evidê
 - Toda ameaça declarada mitigada precisa mapear para controle, teste e resultado versionado.
 - Mudanças em formato criptográfico, Tauri/IPC, OAuth, sincronização, updater, armazenamento de chaves ou política de bloqueio exigem revisão deste documento.
 - Dependências criptográficas e de segurança devem usar versões suportadas, advisories monitorados e atualização controlada.
+- A introdução da senha mestra global (GMP) é uma mudança do modelo de autenticação e, portanto, exige re-aprovação humana e revisão independente antes que este documento volte a ser base estável de design (ver [context.md](../ui-screens/context.md) D-05). Enquanto o status for "EM REVISÃO", os pontos afetados (isolamento, C-01/C-13/C-21 e T-AUTH-*) não contam como aprovados.
 - Auditoria independente é obrigatória antes da versão estável; este documento não substitui auditoria.
 
 ## 14. Referências primárias

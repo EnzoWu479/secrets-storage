@@ -1,11 +1,25 @@
 # State
 
-**Last Updated:** 2026-07-14
-**Current Work:** M0 — protótipos de segurança e preparação da distribuição autenticada
+**Last Updated:** 2026-07-15
+**Current Work:** App funcional frontend-only (AD-023) — vertical senha global + sessões; segredos (CRUD) a seguir. Backend Rust/cripto (M0) segue pendente.
 
 ---
 
 ## Recent Decisions (Last 60 days)
+
+### AD-023: App funcional (frontend-only) — vertical slice senha global + sessões (2026-07-15)
+
+**Decision:** As telas deixaram de ser mockup estático e viraram um **app navegável e funcional**. Os componentes saíram de `src/mockup/` para `src/components`, `src/screens`, `src/stores`, `src/utils`; a galeria `MockupShell`/`StyleGuide` foi removida. Navegação com **vue-router** (hash history) + guard de acesso. Implementada a **1ª vertical**: criar/desbloquear senha global (GMP) e ciclo de vida de sessões (criar/listar/abrir/bloquear/desbloquear), com estado reativo em `src/stores/vault.ts` e persistência em `localStorage`.
+**Reason:** Pedido do usuário: "faça ele ser utilizável, não só mockup". Escopo fatiado: sessões primeiro, segredos (CRUD) depois.
+**Trade-off / ⚠️ SPEC_DEVIATION:** (1) Deriva do design de `ui-screens` ("100% estático, não montado por main.ts"). (2) **NÃO é seguro / não é zero-knowledge:** a senha é guardada como hash SHA-256 em `localStorage` (apenas verificação), **não** o formato de `crypto-format` (Argon2id/AEAD, presos a PT-01/PT-02). É placeholder pré-backend — não usar para dados sensíveis.
+**Impact:** Implementa parcialmente (só frontend) o design de [local-sessions](../features/local-sessions/design.md); o backend Rust/cripto e os comandos Tauri continuam pendentes. Próxima fatia: CRUD de segredos (T09–T11) sobre o mesmo store. `check:frontend` verde (88 testes) e fluxo validado no navegador (criar senha → desbloquear → criar sessão → cofre da sessão → bloquear).
+
+### AD-022: Senha mestra global + autenticação por sessão (global/própria) (2026-07-15)
+
+**Decision:** Introduzir uma **senha mestra global (GMP)** que trava o app inteiro; desbloqueá-la abre em conjunto todas as sessões `global` (padrão). Cada sessão pode optar por **senha própria** (`auth_mode = own`) e manter isolamento total. Modelo criptográfico canônico e fluxos em [ui-screens/context.md](../features/ui-screens/context.md) (D-04).
+**Reason:** Conveniência de uma senha única no dia a dia, preservando a opção de isolar sessões sensíveis.
+**Trade-off:** Quebra a garantia "sem desbloqueio transitivo": comprometer a GMP expõe todas as sessões `global` de uma vez (raio de exposição maior). Sessões `own` mantêm isolamento.
+**Impact:** Propagado para `secure-vault/spec.md` (VAULT-05), `crypto-format/{spec,design}.md` (keyring global, GMK, GKEY-01/02), `secure-vault/threat-model.md` (A-11, T-AUTH-06/07, C-21) e `local-sessions/design.md` (gate de app-unlock, comandos novos). **Rebaixa o modelo de ameaças para "EM REVISÃO" — exige re-aprovação humana antes de virar base de design (D-05).**
 
 ### AD-001: Público e modelo de produto (2026-07-13)
 
@@ -168,6 +182,9 @@ Nenhuma registrada.
 
 ## Quick Tasks Completed
 
+- [x] Padronizar o frontend: nomes reais das telas (sem prefixo `Txx_`), **um componente por pasta com seu teste** (`components/Nome/Nome.vue` + `Nome.test.ts`, idem `screens/`), e **alias de import `@/`** configurado em Vite, Vitest e tsconfig; imports migrados; `check:frontend` verde (88 testes) — 2026-07-15.
+- [x] Tornar o app funcional (frontend-only): mover telas para fora de `src/mockup/`, adicionar vue-router + guard, `src/stores/vault.ts` e a vertical senha global + sessões; 88 testes frontend, tsc e build verdes; fluxo validado no navegador — 2026-07-15. Ver AD-023.
+- [x] Implementar o mockup visual estático T01–T16, StyleGuide e viewer navegável, com 85 testes frontend e build Tauri validado — 2026-07-15.
 - [x] Criar script PowerShell para escolher `fix`, `feature` ou `release`, calcular o próximo SemVer, abrir `chore/release-vX.Y.Z` a partir de uma `main` limpa e sincronizar a versão nos manifests — 2026-07-14.
 - [x] Corrigir os atalhos do seletor de release para `X` (Fix), `F` (Feature) e `R` (Release), sem colisões — 2026-07-14.
 - [x] Declarar `serde_json` diretamente no crate para o `generate_context!` compilar com o overlay do Tauri Updater usado em releases — 2026-07-14.

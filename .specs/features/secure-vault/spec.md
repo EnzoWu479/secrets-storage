@@ -27,49 +27,55 @@ Usuários mantêm senhas e segredos técnicos dispersos em arquivos, notas, nave
 
 ## User Stories
 
+> **Atenção — modelo de ameaças reaberto:** a introdução da senha mestra global (GMP) com sessões globais desbloqueadas em conjunto **contradiz** a garantia original de isolamento total ("estados de bloqueio independentes, sem desbloqueio transitivo") e exige **re-aprovação do modelo de ameaças** antes da implementação. Ver `../../features/ui-screens/context.md` (D-04 e D-05).
+
 ### P1: Criar e desbloquear sessões de segurança ⭐ MVP
 
-**User Story:** Como usuário individual, quero criar e nomear múltiplas sessões persistentes e independentes, cada uma com sua própria senha mestra e política de bloqueio, para separar contextos como trabalho, uso pessoal ou projetos específicos e aplicar proteção proporcional à confidencialidade dos dados.
+**User Story:** Como usuário individual, quero desbloquear o aplicativo com uma senha mestra global (GMP) que abre de uma vez todas as minhas sessões globais e, quando precisar, criar sessões com senha própria isoladas, cada uma com sua política de bloqueio, para separar contextos como trabalho, uso pessoal ou projetos específicos e aplicar proteção proporcional à confidencialidade dos dados.
 
 **Why P1:** Toda outra capacidade depende de uma fronteira de desbloqueio confiável.
 
 **Acceptance Criteria:**
 
-1. WHEN o usuário cria uma sessão de segurança com senha mestra válida THEN o sistema SHALL derivar e persistir somente os dados necessários para verificar e abrir aquela sessão, nunca a senha mestra.
-2. WHEN uma senha mestra incorreta é fornecida THEN o sistema SHALL negar acesso à sessão correspondente sem revelar informação útil sobre seu conteúdo.
+1. WHEN o usuário cria uma sessão de segurança THEN o sistema SHALL adotar a senha mestra global (GMP) por padrão (sessão global) e permitir marcar “usar senha própria” para torná-la uma sessão com senha própria (`own`) isolada, derivando e persistindo em ambos os casos somente os dados necessários para verificar e abrir aquela sessão, nunca a senha em claro.
+2. WHEN uma senha mestra incorreta (global ou própria) é fornecida THEN o sistema SHALL negar acesso à sessão correspondente sem revelar informação útil sobre seu conteúdo.
 3. WHEN uma sessão é bloqueada manualmente ou por política automática THEN o sistema SHALL impedir leitura e modificação de seus segredos até novo desbloqueio, independentemente do estado das demais sessões.
 4. WHEN uma sessão é criada THEN o sistema SHALL configurar 15 minutos de inatividade por padrão e permitir ajuste em um controle de 1 minuto até “nunca”, exigindo confirmação explícita ao escolher “nunca”.
 5. WHEN ocorre uma interação intencional dentro de uma sessão THEN o sistema SHALL reiniciar somente o cronômetro daquela sessão; enquanto o aplicativo está minimizado SHALL continuar contando o período como inatividade para cada sessão aplicável.
 6. WHEN uma sessão é criada THEN o sistema SHALL ativar por padrão o bloqueio ao bloquear e ao suspender o Windows, permitindo desativar individualmente cada reação naquela sessão.
 7. WHEN o aplicativo é encerrado THEN o sistema SHALL bloquear todas as sessões e descartar o material descriptográfico mantido para uso.
-8. WHEN outra sessão permanece desbloqueada THEN o sistema SHALL continuar exigindo a senha mestra própria para entrar em qualquer sessão bloqueada.
+8. WHEN uma sessão com senha própria permanece bloqueada THEN o sistema SHALL exigir a senha própria dela para desbloqueá-la, mesmo com a GMP já desbloqueada e outras sessões abertas (sem desbloqueio transitivo); as sessões globais, por sua vez, desbloqueiam em conjunto com a GMP.
 9. WHEN a lista de sessões é apresentada THEN o sistema SHALL permitir visualizar nomes e quantidade de sessões bloqueadas sem revelar seus segredos.
 10. WHEN o usuário exclui uma sessão THEN o sistema SHALL exigir confirmação explícita e a senha mestra daquela sessão.
 11. WHEN o processo é encerrado ou ocorre falha THEN o sistema SHALL evitar gravar segredos, senhas mestras ou chaves descriptográficas em logs e arquivos temporários.
 12. WHEN o usuário cria uma sessão THEN o sistema SHALL permitir atribuir a ela um nome visível que identifique seu contexto.
 13. WHEN o usuário cria ou renomeia uma sessão THEN o sistema SHALL rejeitar nomes já usados por outra sessão sem diferenciar maiúsculas de minúsculas.
 14. WHEN o usuário renomeia uma sessão THEN o sistema SHALL exigir que aquela sessão esteja desbloqueada.
+15. WHEN o aplicativo é iniciado THEN o sistema SHALL apresentar uma tela de desbloqueio de entrada que exige a senha mestra global (GMP) antes de liberar acesso a qualquer sessão global.
+16. WHEN a GMP é desbloqueada THEN o sistema SHALL abrir de uma vez todas as sessões globais e manter bloqueadas as sessões com senha própria até que suas respectivas senhas sejam fornecidas.
+17. WHEN o usuário alterna uma sessão entre global e própria THEN o sistema SHALL exigir a senha atual apropriada — a GMP para converter uma sessão global e a senha própria para converter uma sessão com senha própria — e re-derivar a proteção para o novo `auth_mode`.
+18. WHEN uma sessão é persistida ou sincronizada THEN o sistema SHALL autenticar seu `auth_mode` (global ou própria) de forma que não possa ser rebaixado de própria para global sem a chave correta.
 
-**Independent Test:** Criar sessões nomeadas “Trabalho” e “Pessoal”, rejeitar uma terceira chamada “trabalho”, renomear somente uma sessão desbloqueada; configurar políticas diferentes, comprovar cronômetros independentes e validar os eventos do Windows e o desbloqueio exclusivo pela senha própria, sem conteúdo legível nos artefatos persistidos previstos pelo teste.
+**Independent Test:** Desbloquear o aplicativo pela GMP e comprovar que todas as sessões globais abrem de uma vez enquanto as sessões com senha própria permanecem bloqueadas; criar sessões nomeadas “Trabalho” e “Pessoal”, rejeitar uma terceira chamada “trabalho”, renomear somente uma sessão desbloqueada; configurar políticas diferentes, comprovar cronômetros independentes e validar os eventos do Windows; comprovar que uma sessão com senha própria exige a senha dela mesmo com a GMP aberta, que a alternância global↔própria exige a senha atual apropriada e que o `auth_mode` não pode ser rebaixado sem a chave correta, sem conteúdo legível nos artefatos persistidos previstos pelo teste.
 
 ---
 
 ### P1: Proteger a senha mestra e as tentativas de acesso ⭐ MVP
 
-**User Story:** Como usuário, quero orientação para criar uma senha mestra forte e proteção contra tentativas repetidas para reduzir o risco de acesso indevido.
+**User Story:** Como usuário, quero orientação para criar senhas mestras fortes — tanto a senha mestra global (GMP) quanto as senhas próprias de sessão — e proteção contra tentativas repetidas para reduzir o risco de acesso indevido.
 
-**Why P1:** Cada sessão depende exclusivamente de sua senha mestra no v1.
+**Why P1:** O acesso ao aplicativo depende da GMP e cada sessão com senha própria depende exclusivamente da sua senha no v1.
 
 **Acceptance Criteria:**
 
-1. WHEN uma senha mestra é criada ou trocada THEN o sistema SHALL exigir o comprimento mínimo definido e exibir um indicador de força compreensível.
-2. WHEN tentativas incorretas se repetem THEN o sistema SHALL aplicar atraso progressivo sem apagar automaticamente a sessão.
+1. WHEN uma senha mestra (a GMP ou a senha própria de uma sessão) é criada ou trocada THEN o sistema SHALL exigir o comprimento mínimo definido e exibir um indicador de força compreensível.
+2. WHEN tentativas incorretas se repetem, tanto na tela de desbloqueio da GMP quanto em uma sessão com senha própria, THEN o sistema SHALL aplicar atraso progressivo sem apagar automaticamente a sessão nem o cofre.
 3. WHEN o usuário configura uma sessão THEN o sistema SHALL permitir uma dica de senha, sincronizá-la entre dispositivos como metadado não secreto para a aplicação e não tratá-la como autenticação ou recuperação.
 4. WHEN a sessão está bloqueada THEN o sistema SHALL revelar a dica somente após a ação explícita “Mostrar dica”.
 5. WHEN o usuário cria ou altera a dica THEN o sistema SHALL avisar que ela é visível sem senha e não deve conter a senha mestra nem partes óbvias dela.
-6. WHEN o usuário troca a senha mestra THEN o sistema SHALL exigir a senha atual válida.
-7. WHEN o usuário utiliza o produto ao longo do tempo THEN o sistema SHALL avisar periodicamente que o v1 não possui recuperação de acesso, deixando a cadência exata para decisão futura.
-8. WHEN o usuário esquece a senha THEN o sistema SHALL informar a ausência de recuperação no v1 e não oferecer um atalho que contorne a senha mestra.
+6. WHEN o usuário troca uma senha mestra THEN o sistema SHALL exigir a senha atual válida; em particular, trocar a GMP SHALL exigir a GMP atual e trocar a senha própria de uma sessão SHALL exigir a senha própria atual.
+7. WHEN o usuário utiliza o produto ao longo do tempo THEN o sistema SHALL avisar periodicamente que o v1 não possui recuperação de acesso — nem para a GMP nem para as senhas próprias — deixando a cadência exata para decisão futura.
+8. WHEN o usuário esquece uma senha THEN o sistema SHALL informar a ausência de recuperação no v1 e não oferecer atalho que contorne a senha; perder a GMP SHALL tornar todas as sessões globais inacessíveis e perder a senha própria SHALL tornar a sessão correspondente inacessível.
 
 **Independent Test:** Validar os limites de senha, o indicador de força e o atraso progressivo; sincronizar a dica, comprovar que ela só aparece após “Mostrar dica” e que o aviso de exposição é apresentado; validar a troca com senha atual e a impossibilidade de troca ou acesso sem a senha correta.
 
@@ -178,29 +184,32 @@ Usuários mantêm senhas e segredos técnicos dispersos em arquivos, notas, nave
 
 ## Requirement Traceability
 
-| Requirement ID | Story | Phase | Status |
-| --- | --- | --- | --- |
-| VAULT-01 | Criar e desbloquear | Design | Pending |
-| VAULT-02 | Bloqueio e proteção local | Design | Pending |
-| VAULT-03 | Isolamento e políticas independentes entre sessões | Design | Pending |
-| VAULT-04 | Política de senha mestra, dicas e tentativas | Design | Pending |
-| SECRET-01 | Tipos e CRUD de segredos | Design | Pending |
-| SECRET-02 | Clipboard e exposição transitória | Design | Pending |
-| SECRET-03 | Pesquisa e movimentação entre sessões | Design | Pending |
-| SYNC-01 | OAuth com escopo mínimo | Design | Pending |
-| SYNC-02 | Conteúdo remoto zero-knowledge | Design | Pending |
-| SYNC-03 | Offline, conflitos e integridade | Design | Pending |
-| SYNC-04 | Rollback e replay remoto | Design | Pending |
-| SYNC-05 | Sincronização automática e modo somente leitura | Design | Pending |
-| SYNC-06 | Resolução e expiração de conflitos | Design | Pending |
-| UPDATE-01 | Autenticidade de atualização | Design | Pending |
-| UPDATE-02 | Downgrade e falha segura | Design | Pending |
-| SEC-01 | Modelo de ameaças e evidências | Design | Drafted |
-| SEC-02 | Redaction e privacidade operacional | Design | Pending |
-| SEC-03 | Acesso físico, ataques offline e limites do hardware | Design | Drafted |
-| RESIL-01 | Gravação atômica e recuperação | Design | Pending |
+| Requirement ID | Story | Phase | Status | Artefato de design |
+| --- | --- | --- | --- | --- |
+| VAULT-01 | Criar e desbloquear | Design | In Design | [local-sessions](../local-sessions/design.md), [crypto-format](../crypto-format/design.md) |
+| VAULT-02 | Bloqueio e proteção local | Design | In Design | [local-sessions](../local-sessions/design.md) |
+| VAULT-03 | Isolamento e políticas independentes entre sessões | Design | In Design | [local-sessions](../local-sessions/design.md), [crypto-format](../crypto-format/design.md) (KEY-01) |
+| VAULT-04 | Política de senha mestra, dicas e tentativas | Design | In Design | [local-sessions](../local-sessions/design.md), [crypto-format](../crypto-format/design.md) (ROT-01) |
+| VAULT-05 | Senha mestra global e modo de autenticação por sessão (global/própria) | Design | In Design | [local-sessions](../local-sessions/design.md) (GMP/`auth_mode`), [crypto-format](../crypto-format/design.md) (GKEY-01/02) |
+| SECRET-01 | Tipos e CRUD de segredos | Design | Pending | — |
+| SECRET-02 | Clipboard e exposição transitória | Design | Pending | — |
+| SECRET-03 | Pesquisa e movimentação entre sessões | Design | Pending | — |
+| SYNC-01 | OAuth com escopo mínimo | Design | Pending | — |
+| SYNC-02 | Conteúdo remoto zero-knowledge | Design | Pending | [crypto-format](../crypto-format/spec.md) (INTEG-01, campos reservados; sync adiada) |
+| SYNC-03 | Offline, conflitos e integridade | Design | Pending | — |
+| SYNC-04 | Rollback e replay remoto | Design | Pending | — |
+| SYNC-05 | Sincronização automática e modo somente leitura | Design | Pending | — |
+| SYNC-06 | Resolução e expiração de conflitos | Design | Pending | — |
+| UPDATE-01 | Autenticidade de atualização | Design | Pending | — |
+| UPDATE-02 | Downgrade e falha segura | Design | Pending | — |
+| SEC-01 | Modelo de ameaças e evidências | Design | Em revisão | [threat-model](./threat-model.md) — reaberto por AD-022 (GMP), re-aprovação pendente |
+| SEC-02 | Redaction e privacidade operacional | Design | Pending | — |
+| SEC-03 | Acesso físico, ataques offline e limites do hardware | Design | Em revisão | [threat-model](./threat-model.md) — reaberto por AD-022 (GMP), re-aprovação pendente |
+| RESIL-01 | Gravação atômica e recuperação | Design | Pending | — |
 
-**Coverage:** 19 requisitos, 0 mapeados para tarefas, 19 ainda não mapeados.
+**Status values:** Pending → In Design → In Tasks → Implementing → Verified. `Em revisão` = artefato existia como aprovado e foi reaberto por decisão posterior (AD-022), aguardando nova aprovação humana antes de voltar a ser base estável.
+
+**Coverage:** 20 requisitos — 5 em design (VAULT-01…05, cobertos por [local-sessions](../local-sessions/design.md) + [crypto-format](../crypto-format/design.md), ambos `Draft`), 2 em revisão (SEC-01, SEC-03, por [threat-model](./threat-model.md) reaberto em AD-022), 13 pendentes; **0 mapeados para tarefas funcionais**. O mockup visual [ui-screens](../ui-screens/tasks.md) (`Done`) cobre a *superfície de tela* de VAULT/SECRET/SYNC/UPDATE, porém sem lógica, criptografia ou persistência — não conta como implementação de nenhum requisito funcional acima.
 
 ---
 
@@ -209,7 +218,7 @@ Usuários mantêm senhas e segredos técnicos dispersos em arquivos, notas, nave
 - [ ] Todos os cenários P1 passam em Windows suportado sem segredo legível nos artefatos persistidos cobertos pelos testes.
 - [ ] Alteração de qualquer byte em um cofre ou blob sincronizado protegido é detectada antes de seu uso.
 - [ ] Testes de conflito demonstram ausência de perda silenciosa entre dois dispositivos.
-- [ ] Sessões com senhas e políticas diferentes mantêm estados de bloqueio independentes, sem desbloqueio transitivo.
+- [ ] Sessões com senha própria e políticas diferentes mantêm estados de bloqueio independentes, sem desbloqueio transitivo; sessões globais, por sua vez, abrem juntas ao desbloquear a senha mestra global (GMP).
 - [ ] O usuário cria múltiplas sessões persistentes com nomes únicos sem distinção de maiúsculas/minúsculas e renomeia somente sessões desbloqueadas.
 - [ ] Novas sessões usam 15 minutos, reiniciam apenas por interação intencional na própria sessão, bloqueiam por padrão com bloqueio/suspensão do Windows e sempre bloqueiam ao fechar o aplicativo.
 - [ ] Senhas fracas abaixo do mínimo são rejeitadas, tentativas repetidas sofrem atraso progressivo e nenhuma troca ocorre sem a senha atual.

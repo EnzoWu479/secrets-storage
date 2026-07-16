@@ -12,12 +12,13 @@
 
 ### Features
 
-**Modelo de ameaças e requisitos de segurança** — COMPLETE
+**Modelo de ameaças e requisitos de segurança** — COMPLETE (reaberto em revisão por AD-022)
 
 - Definir ativos, fronteiras de confiança, adversários e ataques previstos.
 - Cobrir memória, disco, logs, clipboard, arquivos temporários, IPC, interface, cadeia de atualização, OAuth e sincronização.
 - Documentar ameaças mitigadas, parcialmente mitigadas, aceitas e fora do modelo.
 - Revisar e aprovar o [modelo de ameaças do v1](../features/secure-vault/threat-model.md) antes de fechar o formato criptográfico.
+- ⚠️ **Reaberto (AD-022, 2026-07-15):** a senha mestra global (GMP) e o `auth_mode = global` alteram isolamento e raio de exposição; SEC-01/SEC-03 voltam a `Em revisão` e o modelo exige **nova aprovação humana** antes de servir de base estável de design.
 
 **Formato criptográfico versionado** — PLANNED
 
