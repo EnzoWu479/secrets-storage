@@ -27,5 +27,17 @@ updater = ["dep:tauri-plugin-updater"]
 serde_json = "1"
 tauri = { version = "2", features = [] }
 
+# Crypto core (candidatos do design crypto-format; params PT-01/PT-02 provisórios)
+argon2 = "0.5"
+chacha20poly1305 = "0.10"
+hkdf = "0.12"
+sha2 = "0.10"
+zeroize = "1"
+getrandom = "0.2"
+ciborium = "0.2"
+uuid = { version = "1", features = ["v4"] }
+serde = { version = "1", features = ["derive"] }
+thiserror = "2"
+
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-updater = { version = "2", optional = true }

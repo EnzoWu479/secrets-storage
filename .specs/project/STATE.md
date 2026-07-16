@@ -1,11 +1,18 @@
 # State
 
 **Last Updated:** 2026-07-15
-**Current Work:** App funcional frontend-only (AD-023) — vertical senha global + sessões; segredos (CRUD) a seguir. Backend Rust/cripto (M0) segue pendente.
+**Current Work:** Backend cripto do M0 (`crypto-format`) iniciado. `tasks.md` criado e aprovado (8 tarefas, 5 fases). **T1 (Fundação) compila e passa 1 teste**; falta rodar o gate completo `pnpm check:rust` (ver aviso `linker_messages`). Fase 2 (`kdf`/`keys`/`aead`) é o próximo passo. App funcional frontend-only (AD-023) segue como placeholder inseguro em paralelo.
 
 ---
 
 ## Recent Decisions (Last 60 days)
+
+### AD-024: Início do backend criptográfico (`crypto-format`) (2026-07-15)
+
+**Decision:** Iniciar a implementação Rust do formato criptográfico versionado (fatia Sessões + desbloqueio), a partir do `crypto-format/design.md`. Criado `crypto-format/tasks.md` (8 tarefas, 5 fases): T1 fundação; T2/T3/T4 `kdf`/`keys`/`aead`; T5/T6 `keyring`/`envelope`; T7 vetores; T8 plano de revisão. **T1 concluída** (módulo `crypto`, `CryptoError`, `Key32` zeroizável; 10 crates candidatas no `Cargo.toml`; compila, 1 teste verde).
+**Reason:** Usuário escolheu "começar backend cripto (M0)" para dar prosseguimento ao roadmap.
+**Trade-off / desvios anotados:** (1) `Key32` foi para a fundação (não em `keys` como no design) para desacoplar os primitivos e permitir paralelismo — desvio mínimo. (2) Randomness injetável por parâmetro no núcleo (produção usa `getrandom`), para vetores determinísticos (T7). (3) Params Argon2id/nonce entram como **candidatos** `⚠️ PT-01/PT-02`, não finais.
+**Impact / gate aberto:** Implementa o design candidato; **não** fecha o gate D-05 (modelo de ameaças reaberto por AD-022 ainda exige re-aprovação humana antes de virar base estável). A orquestração de app-unlock e os comandos Tauri ficam para `local-sessions`. Pendência imediata: rodar `pnpm check:rust` completo (aviso `linker_messages` a avaliar sob `-D warnings`).
 
 ### AD-023: App funcional (frontend-only) — vertical slice senha global + sessões (2026-07-15)
 
