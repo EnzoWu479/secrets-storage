@@ -1,11 +1,39 @@
 # State
 
-**Last Updated:** 2026-07-15
-**Current Work:** App funcional frontend-only (AD-023) — vertical senha global + sessões; segredos (CRUD) a seguir. Backend Rust/cripto (M0) segue pendente.
+**Last Updated:** 2026-07-16
+**Current Work:** Backend cripto do M0 (`crypto-format`, fatia Sessões + desbloqueio) **COMPLETO** — todas as 5 fases (T1–T8) com gate `pnpm check:rust` verde (**53 testes**): `crypto::{kdf,keys,aead,keyring,envelope,vectors}` (+`codec` interno) + `review-plan.md`. Segue como **design candidato**: não fecha o gate D-05 (modelo de ameaças) nem fixa PT-01/PT-02; a revisão independente descrita em `crypto-format/review-plan.md` é o próximo marco. App funcional frontend-only (AD-023) segue como placeholder inseguro em paralelo. Comandos Tauri / orquestração de app-unlock ficam para a feature `local-sessions`.
 
 ---
 
 ## Recent Decisions (Last 60 days)
+
+### AD-027: Fases 4–5 do backend cripto — vetores e plano de revisão; fatia completa (2026-07-16)
+
+**Decision:** Concluídas as duas últimas fases do `crypto-format`, fechando a fatia. **T7 `crypto::vectors`** (`#[cfg(test)]`): vetores golden determinísticos (entradas fixas → saídas hex esperadas para gKEK/KEK/K_sessao/content_key/AEAD e os envelopes serializados completos), recuperação e adulteração (1 bit ⇒ rejeição autenticada). **T8 `review-plan.md`**: escopo/entregáveis/critérios da revisão criptográfica independente. Gate `pnpm check:rust` verde (53 testes).
+**Reason:** Usuário pediu para "continuar fazendo todas as fases até o fim".
+**Trade-off / desvios anotados:** (1) Os vetores golden foram capturados executando o próprio código com entradas fixas e fixados como constantes de regressão — dependem de PT-01/PT-02 e do layout CBOR e mudarão se estes forem revisados (comportamento esperado). (2) Adulteração no nível dos vetores inverte 1 bit do último byte (tag) do envelope serializado; a mutação campo-a-campo do header já é coberta nos testes de `keyring`/`envelope`.
+**Impact / gate aberto:** A fatia Sessões + desbloqueio está **implementada e testada como candidato**. **Continua NÃO fechando o gate D-05**: `review-plan.md` define o caminho para a revisão independente que precede a promoção a base estável e a fixação de PT-01/PT-02.
+
+### AD-026: Fase 3 do backend cripto — envelopes `keyring`/`envelope` (2026-07-16)
+
+**Decision:** Implementadas as duas tarefas da Fase 3 do `crypto-format`, com gate `pnpm check:rust` verde (39 testes). **T5 `crypto::keyring`:** keyring global CBOR (`create_keyring`/`unwrap_gmk`/`change_gmp`) — gKEK←Argon2id(GMP,salt_global) envolve a GMK aleatória; troca de GMP reenvolve a mesma GMK. **T6 `crypto::envelope`:** cofre de sessão CBOR versionado (`create_vault`/`unlock`/`rewrap`) com wrap condicional por `auth_mode` (own=Argon2id, global=HKDF(GMK,uuid)), fail-closed em versão superior e preservação de campos desconhecidos. Infra `crypto::codec` (helpers `to_cbor`/`from_cbor` + DTOs `KdfDescriptor`/`WrapField`).
+**Reason:** Dar prosseguimento ao plano aprovado em `tasks.md` (Fase 3 após a Fase 2).
+**Trade-off / desvios anotados:** (1) Header carregado como **bytes CBOR opacos** dentro do envelope, usado diretamente como AAD — garante AAD estável e forward-compat de campos desconhecidos (FMT-03) sem re-serialização. (2) Em `auth_mode = global`, os campos `salt`/`kdf` do header são placeholder (zeros + candidato), autenticados mas não usados. (3) `rewrap` reautentica (re-sela) o payload sob o novo header, pois a AAD é o header completo. (4) `secrets` fica como `Vec<ciborium::value::Value>` para não fixar o modelo de segredos.
+**Impact / gate aberto:** Continua implementando o design **candidato**; **não** fecha o gate D-05. Falta a Fase 4 (vetores T7) e a Fase 5 (plano de revisão T8). Parâmetros PT-01/PT-02 seguem provisórios.
+
+### AD-025: Fase 2 do backend cripto — primitivos `kdf`/`keys`/`aead` (2026-07-16)
+
+**Decision:** Implementadas as três tarefas paralelas da Fase 2 do `crypto-format`, com gate `pnpm check:rust` verde (fmt + clippy `-D warnings` + 21 testes). **T2 `crypto::kdf`:** `derive_kek` via Argon2id + `KdfParams` com `validate()` que rejeita fora dos limites defensivos (`MIN/MAX_*`) antes de alocar; candidato 64 MiB/3/1 (`⚠️ PT-01`). **T3 `crypto::keys`:** `generate_root_key`, `derive_content_key(epoch)`, `derive_session_wrap_key(uuid)` via HKDF-SHA256 com rótulos `ssv:content:v1:` / `ssv:session-wrap:v1:`. **T4 `crypto::aead`:** `seal`/`open` (XChaCha20-Poly1305, nonce 24 bytes, AAD) + `wrap_key`/`unwrap_key` sobre `Key32`.
+**Reason:** Dar prosseguimento ao plano aprovado em `tasks.md` (Fase 2 é o passo seguinte a T1).
+**Trade-off / desvios anotados:** (1) `seal`/`wrap_key` mantêm assinatura infalível (`-> Vec<u8>`) do design, com `expect` justificado (encrypt só falha além do limite de tamanho da cifra). (2) `unwrap_key` zeroiza o buffer intermediário do material desenvolvido. (3) Ambiente de build Linux exigiu libs GTK do sistema (`libgtk-3-dev` etc.) para o `cargo test` do crate Tauri — não afeta o código.
+**Impact / gate aberto:** Continua implementando o design **candidato**; **não** fecha o gate D-05 (modelo de ameaças reaberto por AD-022). Parâmetros PT-01/PT-02 seguem provisórios. Próximo: Fase 3 (`keyring`/`envelope`).
+
+### AD-024: Início do backend criptográfico (`crypto-format`) (2026-07-15)
+
+**Decision:** Iniciar a implementação Rust do formato criptográfico versionado (fatia Sessões + desbloqueio), a partir do `crypto-format/design.md`. Criado `crypto-format/tasks.md` (8 tarefas, 5 fases): T1 fundação; T2/T3/T4 `kdf`/`keys`/`aead`; T5/T6 `keyring`/`envelope`; T7 vetores; T8 plano de revisão. **T1 concluída** (módulo `crypto`, `CryptoError`, `Key32` zeroizável; 10 crates candidatas no `Cargo.toml`; compila, 1 teste verde).
+**Reason:** Usuário escolheu "começar backend cripto (M0)" para dar prosseguimento ao roadmap.
+**Trade-off / desvios anotados:** (1) `Key32` foi para a fundação (não em `keys` como no design) para desacoplar os primitivos e permitir paralelismo — desvio mínimo. (2) Randomness injetável por parâmetro no núcleo (produção usa `getrandom`), para vetores determinísticos (T7). (3) Params Argon2id/nonce entram como **candidatos** `⚠️ PT-01/PT-02`, não finais.
+**Impact / gate aberto:** Implementa o design candidato; **não** fecha o gate D-05 (modelo de ameaças reaberto por AD-022 ainda exige re-aprovação humana antes de virar base estável). A orquestração de app-unlock e os comandos Tauri ficam para `local-sessions`. Pendência imediata: rodar `pnpm check:rust` completo (aviso `linker_messages` a avaliar sob `-D warnings`).
 
 ### AD-023: App funcional (frontend-only) — vertical slice senha global + sessões (2026-07-15)
 
