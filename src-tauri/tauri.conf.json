@@ -12,15 +12,20 @@
   "app": {
     "windows": [
       {
+        "label": "main",
         "title": "Secrets Storage",
         "width": 1024,
         "height": 720,
         "minWidth": 800,
-        "minHeight": 600
+        "minHeight": 600,
+        "devtools": false
       }
     ],
     "security": {
-      "csp": "default-src 'self'; connect-src ipc: http://ipc.localhost; img-src 'self' data:; style-src 'self'"
+      "csp": "default-src 'self'; connect-src ipc: http://ipc.localhost; img-src 'self' data:; style-src 'self'",
+      "capabilities": ["default"],
+      "dangerousDisableAssetCspModification": false,
+      "freezePrototype": true
     }
   },
   "bundle": {

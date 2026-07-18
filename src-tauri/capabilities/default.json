@@ -2,6 +2,7 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
   "description": "Main window without privileged commands during the foundation phase",
+  "local": true,
   "windows": ["main"],
   "permissions": ["core:app:allow-version"]
 }
