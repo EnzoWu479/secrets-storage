@@ -1,4 +1,8 @@
 pub mod crypto;
+pub mod platform;
+#[cfg(feature = "security-proof")]
+pub mod proof;
+pub mod security;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
