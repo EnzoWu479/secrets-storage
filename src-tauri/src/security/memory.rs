@@ -71,6 +71,13 @@ pub struct SensitiveRegion {
     page_lock_platform_code: Option<u32>,
 }
 
+// SAFETY: `SensitiveRegion` is the unique, non-Clone owner of a VirtualAlloc
+// region and never exposes its pointer or a borrow that can outlive `&self`.
+// The allocation, page lock and release APIs operate on the process virtual
+// address space and have no creating-thread affinity. Moving the owner keeps
+// exclusive access and Drop still zeroizes before releasing the same region.
+unsafe impl Send for SensitiveRegion {}
+
 impl SensitiveRegion {
     pub fn new(bytes: &[u8]) -> Result<Self, SensitiveMemoryError> {
         Self::allocate(bytes, PageLockStrategy::System)

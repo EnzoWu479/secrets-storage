@@ -1,12 +1,19 @@
 #![cfg(all(windows, feature = "security-proof"))]
 
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc::{Receiver, RecvTimeoutError};
+use std::sync::Arc;
 use std::time::Duration;
 
 use secrets_storage_lib::platform::windows::events::{
     wts_retry_action_for_proof, ListenerRegistrationStatus, RetryAction, WindowsEventPump,
 };
 use secrets_storage_lib::security::lock::LockReason;
+use secrets_storage_lib::security::lock::{LockCoordinator, LockState};
+use secrets_storage_lib::security::memory::SensitiveRegion;
+use secrets_storage_lib::{
+    apply_exit_lifecycle, ApplicationLifecycle, ApplicationSensitiveState, ExitLifecycleEvent,
+};
 use windows::Win32::UI::WindowsAndMessaging::{
     PBT_APMRESUMEAUTOMATIC, PBT_APMRESUMECRITICAL, PBT_APMRESUMESUSPEND, PBT_APMSUSPEND, WM_CLOSE,
     WM_POWERBROADCAST, WM_WTSSESSION_CHANGE, WTS_SESSION_LOCK,
@@ -14,6 +21,14 @@ use windows::Win32::UI::WindowsAndMessaging::{
 
 const SIGNAL_TIMEOUT: Duration = Duration::from_secs(2);
 const RPC_S_INVALID_BINDING: u32 = 1702;
+
+struct DropMarker(Arc<AtomicBool>);
+
+impl Drop for DropMarker {
+    fn drop(&mut self) {
+        self.0.store(true, Ordering::SeqCst);
+    }
+}
 
 fn start_pump() -> (WindowsEventPump, Receiver<LockReason>) {
     WindowsEventPump::start().expect("the Windows event pump must start")
@@ -138,4 +153,77 @@ fn ignores_external_close_and_keeps_the_pump_alive() {
         LockReason::SessionLocked
     );
     pump.shutdown().unwrap();
+}
+
+#[test]
+fn exit_requested_locks_and_drops_state_before_returning() {
+    let dropped = Arc::new(AtomicBool::new(false));
+    let coordinator = LockCoordinator::default();
+    coordinator.install_unlocked(DropMarker(Arc::clone(&dropped)));
+
+    let outcome = apply_exit_lifecycle(&coordinator, ExitLifecycleEvent::ExitRequested).unwrap();
+
+    assert_eq!(outcome.state, LockState::Locked);
+    assert_eq!(outcome.reason, LockReason::Exiting);
+    assert!(outcome.changed);
+    assert!(dropped.load(Ordering::SeqCst));
+}
+
+#[test]
+fn exit_reapplies_the_fail_closed_lock_as_a_fallback() {
+    let coordinator = LockCoordinator::default();
+    coordinator.install_unlocked(());
+
+    let outcome = apply_exit_lifecycle(&coordinator, ExitLifecycleEvent::Exit).unwrap();
+
+    assert_eq!(outcome.state, LockState::Locked);
+    assert_eq!(outcome.reason, LockReason::Exiting);
+}
+
+#[test]
+fn duplicate_exit_is_idempotent() {
+    let coordinator = LockCoordinator::default();
+    coordinator.install_unlocked(());
+    let first = apply_exit_lifecycle(&coordinator, ExitLifecycleEvent::ExitRequested).unwrap();
+
+    let second = apply_exit_lifecycle(&coordinator, ExitLifecycleEvent::Exit).unwrap();
+
+    assert!(!second.changed);
+    assert_eq!(second.epoch, first.epoch);
+}
+
+#[test]
+fn window_close_does_not_replace_a_global_exit_event() {
+    let coordinator = LockCoordinator::default();
+    coordinator.install_unlocked(());
+
+    let outcome = apply_exit_lifecycle(&coordinator, ExitLifecycleEvent::WindowCloseRequested);
+
+    assert!(outcome.is_none());
+    assert_eq!(coordinator.snapshot().state, LockState::Unlocked);
+}
+
+#[test]
+fn lifecycle_manages_and_locks_the_same_authoritative_coordinator() {
+    let dropped = Arc::new(AtomicBool::new(false));
+    let lifecycle = ApplicationLifecycle::new();
+    let managed = lifecycle.coordinator();
+    let captured = lifecycle.coordinator();
+    assert!(Arc::ptr_eq(&managed, &captured));
+    managed.install_unlocked(ApplicationSensitiveState::new(DropMarker(Arc::clone(
+        &dropped,
+    ))));
+
+    let outcome = lifecycle.apply(ExitLifecycleEvent::ExitRequested).unwrap();
+
+    assert!(outcome.changed);
+    assert!(dropped.load(Ordering::SeqCst));
+    assert_eq!(managed.snapshot().state, LockState::Locked);
+}
+
+#[test]
+fn sensitive_region_can_be_owned_by_the_cross_thread_application_state() {
+    fn assert_send<T: Send>() {}
+
+    assert_send::<SensitiveRegion>();
 }

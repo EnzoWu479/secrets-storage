@@ -4,6 +4,69 @@ pub mod platform;
 pub mod proof;
 pub mod security;
 
+use std::sync::Arc;
+
+use security::lock::{LockCoordinator, LockOutcome, LockReason};
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ExitLifecycleEvent {
+    ExitRequested,
+    Exit,
+    WindowCloseRequested,
+}
+
+pub struct ApplicationSensitiveState {
+    _owned: Box<dyn Send + 'static>,
+}
+
+impl ApplicationSensitiveState {
+    pub fn new<T: Send + 'static>(state: T) -> Self {
+        Self {
+            _owned: Box::new(state),
+        }
+    }
+}
+
+pub type ApplicationLockCoordinator = LockCoordinator<ApplicationSensitiveState>;
+
+pub struct ApplicationLifecycle {
+    coordinator: Arc<ApplicationLockCoordinator>,
+}
+
+impl ApplicationLifecycle {
+    pub fn new() -> Self {
+        Self {
+            coordinator: Arc::new(ApplicationLockCoordinator::default()),
+        }
+    }
+
+    pub fn coordinator(&self) -> Arc<ApplicationLockCoordinator> {
+        Arc::clone(&self.coordinator)
+    }
+
+    pub fn apply(&self, event: ExitLifecycleEvent) -> Option<LockOutcome> {
+        apply_exit_lifecycle(self.coordinator.as_ref(), event)
+    }
+}
+
+impl Default for ApplicationLifecycle {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+pub fn apply_exit_lifecycle<T>(
+    coordinator: &LockCoordinator<T>,
+    event: ExitLifecycleEvent,
+) -> Option<LockOutcome> {
+    match event {
+        ExitLifecycleEvent::ExitRequested | ExitLifecycleEvent::Exit => {
+            Some(coordinator.lock(LockReason::Exiting))
+        }
+        ExitLifecycleEvent::WindowCloseRequested => None,
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let builder = tauri::Builder::default();
@@ -24,9 +87,22 @@ pub fn run() {
             Ok(())
         });
 
-    builder
-        .run(tauri::generate_context!())
-        .expect("failed to run Secrets Storage");
+    let lifecycle = ApplicationLifecycle::new();
+    let builder = builder.manage(lifecycle.coordinator());
+    let app = builder
+        .build(tauri::generate_context!())
+        .expect("failed to build Secrets Storage");
+
+    app.run(move |_app_handle, event| {
+        let lifecycle_event = match event {
+            tauri::RunEvent::ExitRequested { .. } => Some(ExitLifecycleEvent::ExitRequested),
+            tauri::RunEvent::Exit => Some(ExitLifecycleEvent::Exit),
+            _ => None,
+        };
+        if let Some(lifecycle_event) = lifecycle_event {
+            let _ = lifecycle.apply(lifecycle_event);
+        }
+    });
 }
 
 #[cfg(feature = "updater")]
