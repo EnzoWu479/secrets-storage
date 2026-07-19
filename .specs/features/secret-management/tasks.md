@@ -75,8 +75,9 @@ Fonte: [tasks-ui-flowchart.mmd](./tasks-ui-flowchart.mmd)
 
 ### T02 — Declarar os módulos da feature
 
+**Status:** Done — 2026-07-19
 **What:** criar os módulos vazios e exports que delimitam `secrets`, `storage` e clipboard Windows, sem comportamento.  
-**Where:** `src-tauri/src/{lib.rs,secrets/mod.rs,storage/mod.rs,platform/windows/mod.rs}`  
+**Where:** `src-tauri/src/{lib.rs,secrets/mod.rs,storage/mod.rs,platform/windows/mod.rs,platform/windows/clipboard.rs}`
 **Depends on:** T01  
 **Reuses:** layout de `crypto`, `security` e `platform`  
 **Requirements:** SECMGMT-01, SECMGMT-06, SECMGMT-14  
@@ -84,9 +85,9 @@ Fonte: [tasks-ui-flowchart.mmd](./tasks-ui-flowchart.mmd)
 
 **Done when:**
 
-- [ ] Os módulos compilam nos targets condicionais atuais.
-- [ ] Nenhuma API de segredo fica exposta à WebView.
-- [ ] Smoke passa; contagem: baseline Rust preservado.
+- [x] Os módulos compilam nos targets condicionais atuais.
+- [x] Nenhuma API de segredo fica exposta à WebView.
+- [x] Smoke passa; contagem: 75 testes Rust preservados.
 
 **Tests/Gate:** smoke de build; `cargo check --manifest-path src-tauri/Cargo.toml`  
 **Verify:** `pnpm check:rust`  

@@ -2,7 +2,9 @@ pub mod crypto;
 pub mod platform;
 #[cfg(feature = "security-proof")]
 pub mod proof;
+pub mod secrets;
 pub mod security;
+pub mod storage;
 
 use std::any::Any;
 use std::sync::Arc;
