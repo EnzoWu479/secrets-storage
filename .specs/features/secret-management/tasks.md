@@ -221,8 +221,9 @@ Fonte: [tasks-ui-flowchart.mmd](./tasks-ui-flowchart.mmd)
 
 ### T09 — Implementar busca e cursores estáveis
 
+**Status:** Done — 2026-07-19
 **What:** pesquisar somente metadados allowlisted de sessões desbloqueadas e paginar com cursor versionado por epochs.  
-**Where:** `src-tauri/src/secrets/service.rs`  
+**Where:** `src-tauri/src/secrets/{service.rs,session_access.rs}`
 **Depends on:** T08  
 **Reuses:** normalização do modelo, summaries e guards de `SessionAccess`  
 **Requirements:** SECMGMT-05, SECMGMT-07, SECMGMT-10, SECMGMT-11  
@@ -230,10 +231,10 @@ Fonte: [tasks-ui-flowchart.mmd](./tasks-ui-flowchart.mmd)
 
 **Done when:**
 
-- [ ] RED cobre campos pesquisáveis, query vazia, sessão bloqueada durante busca e `stale_cursor`.
-- [ ] Valores, notas, tokens e chaves nunca participam da comparação.
-- [ ] Todas as epochs são revalidadas antes da resposta.
-- [ ] Gate passa; contagem: baseline + no mínimo 12 unit tests.
+- [x] RED cobre campos pesquisáveis, query vazia, sessão bloqueada durante busca e `stale_cursor`.
+- [x] Valores, notas, tokens e chaves nunca participam da comparação.
+- [x] Todas as epochs são revalidadas antes da resposta e sessões inválidas são descartadas.
+- [x] Gate passa; contagem: 16 testes de busca + 3 testes de acesso global, 173 no total.
 
 **Tests/Gate:** unitário Rust; `pnpm test:rust`  
 **Verify:** `pnpm check:rust`  

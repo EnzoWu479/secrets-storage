@@ -75,6 +75,13 @@ pub struct AuthorizedResult<T> {
     pub revision: u64,
 }
 
+pub struct AuthorizedSessionResult<T> {
+    pub session_id: Uuid,
+    pub value: T,
+    pub epoch: u64,
+    pub revision: u64,
+}
+
 pub struct TwoSessionResult<T> {
     pub value: T,
     pub first: SessionStamp,
@@ -87,6 +94,11 @@ pub trait SessionAccess {
         session_id: Uuid,
         operation: impl FnOnce(SessionRead<'_>) -> Result<T, SecretError>,
     ) -> Result<AuthorizedResult<T>, SessionAccessError>;
+
+    fn read_all_authorized<T>(
+        &self,
+        operation: impl FnMut(Uuid, SessionRead<'_>) -> Result<T, SecretError>,
+    ) -> Result<Vec<AuthorizedSessionResult<T>>, SessionAccessError>;
 
     fn write_authorized<T>(
         &self,
@@ -155,6 +167,14 @@ mod fake {
             self.acquire_fail_closed()
                 .invalidate_before_commit
                 .insert(id);
+        }
+
+        pub fn lock(&self, id: Uuid) {
+            let mut inner = self.acquire_fail_closed();
+            if let Some(session) = inner.sessions.get_mut(&id) {
+                session.content = None;
+                session.epoch = session.epoch.saturating_add(1);
+            }
         }
 
         pub fn fail_before_next_commit(&self) {
@@ -261,6 +281,63 @@ mod fake {
                 epoch: snapshot.epoch,
                 revision: snapshot.revision,
             })
+        }
+
+        fn read_all_authorized<T>(
+            &self,
+            mut operation: impl FnMut(Uuid, SessionRead<'_>) -> Result<T, SecretError>,
+        ) -> Result<Vec<AuthorizedSessionResult<T>>, SessionAccessError> {
+            let snapshots = {
+                let inner = self.acquire_fail_closed();
+                inner
+                    .sessions
+                    .iter()
+                    .filter_map(|(id, session)| {
+                        session.content.as_ref().map(|content| {
+                            (
+                                *id,
+                                Snapshot {
+                                    content: content.clone(),
+                                    epoch: session.epoch,
+                                    revision: session.revision,
+                                },
+                            )
+                        })
+                    })
+                    .collect::<Vec<_>>()
+            };
+
+            let mut projected = Vec::with_capacity(snapshots.len());
+            for (id, snapshot) in snapshots {
+                let value = operation(
+                    id,
+                    SessionRead {
+                        content: &snapshot.content,
+                        epoch: snapshot.epoch,
+                        revision: snapshot.revision,
+                    },
+                )
+                .map_err(SessionAccessError::Operation)?;
+                projected.push((id, snapshot, value));
+            }
+
+            let mut inner = self.acquire_fail_closed();
+            for (id, _, _) in &projected {
+                Self::invalidate_requested(&mut inner, *id);
+            }
+            Ok(projected
+                .into_iter()
+                .filter_map(|(id, snapshot, value)| {
+                    Self::revalidate(&inner, id, &snapshot)
+                        .ok()
+                        .map(|()| AuthorizedSessionResult {
+                            session_id: id,
+                            value,
+                            epoch: snapshot.epoch,
+                            revision: snapshot.revision,
+                        })
+                })
+                .collect())
         }
 
         fn write_authorized<T>(
@@ -554,5 +631,69 @@ mod tests {
 
         assert!(matches!(result, Err(SessionAccessError::SameSession)));
         assert_eq!(access.revision(id), Some(0));
+    }
+
+    #[test]
+    fn leitura_global_enumera_somente_sessoes_desbloqueadas_em_ordem_estavel() {
+        let access = FakeSessionAccess::default();
+        let low = Uuid::from_u128(1);
+        let locked = Uuid::from_u128(2);
+        let high = Uuid::from_u128(3);
+        access.install_unlocked(high, content(3));
+        access.install_unlocked(low, content(1));
+        access.install_unlocked(locked, content(2));
+        access.invalidate_before_next_commit(locked);
+        let _ = access.read_authorized(locked, |_| Ok::<_, SecretError>(()));
+
+        let results = access
+            .read_all_authorized(|id, session| {
+                Ok::<_, SecretError>((id, session.content().secrets.len()))
+            })
+            .expect("leitura global");
+
+        assert_eq!(
+            results
+                .iter()
+                .map(|result| result.session_id)
+                .collect::<Vec<_>>(),
+            vec![low, high]
+        );
+    }
+
+    #[test]
+    fn leitura_global_descarta_sessao_invalidada_antes_da_resposta() {
+        let access = FakeSessionAccess::default();
+        let stable = Uuid::from_u128(1);
+        let invalidated = Uuid::from_u128(2);
+        access.install_unlocked(stable, content(1));
+        access.install_unlocked(invalidated, content(2));
+        access.invalidate_before_next_commit(invalidated);
+
+        let results = access
+            .read_all_authorized(|id, _| Ok::<_, SecretError>(id))
+            .expect("leitura global");
+
+        assert_eq!(results.len(), 1);
+        assert_eq!(results[0].session_id, stable);
+        assert_eq!(results[0].value, stable);
+        assert_eq!(access.content(invalidated), None);
+    }
+
+    #[test]
+    fn leitura_global_retorna_epoch_e_revisao_revalidadas() {
+        let access = FakeSessionAccess::default();
+        let id = Uuid::from_u128(1);
+        access.install_unlocked(id, content(1));
+
+        let results = access
+            .read_all_authorized(|_, session| {
+                Ok::<_, SecretError>((session.epoch(), session.revision()))
+            })
+            .expect("leitura global");
+
+        assert_eq!(results.len(), 1);
+        assert_eq!(results[0].value, (1, 0));
+        assert_eq!(results[0].epoch, 1);
+        assert_eq!(results[0].revision, 0);
     }
 }
