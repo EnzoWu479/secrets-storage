@@ -239,8 +239,9 @@ Fonte: [tasks-ui-flowchart.mmd](./tasks-ui-flowchart.mmd)
 
 ### T10 — Implementar a máquina de estados de movimentação [P]
 
+**Status:** Done — 2026-07-19
 **What:** modelar `PendingMove`, `Staged`, `Committed` e decisões determinísticas de completar/reverter.  
-**Where:** `src-tauri/src/secrets/move_state.rs`  
+**Where:** `src-tauri/src/secrets/{move_state.rs,model.rs,codec.rs,mod.rs}`
 **Depends on:** T03, T05  
 **Reuses:** IDs/revisões do modelo e ordem de lock de `SessionAccess`  
 **Requirements:** SECMGMT-12, SECMGMT-13  
@@ -248,10 +249,10 @@ Fonte: [tasks-ui-flowchart.mmd](./tasks-ui-flowchart.mmd)
 
 **Done when:**
 
-- [ ] RED cobre cada fronteira dos quatro commits e origem=destino.
-- [ ] Estado visível nunca contém `Staged`.
-- [ ] Recovery preserva “origem intacta ou cópia completa no destino”.
-- [ ] Gate passa; contagem: baseline + no mínimo 12 unit tests.
+- [x] RED cobre cada fronteira dos quatro commits e origem=destino.
+- [x] Estado visível nunca contém `Staged`.
+- [x] Recovery preserva “origem intacta ou cópia completa no destino”.
+- [x] Gate passa; contagem: 10 testes da máquina + 2 roundtrips de persistência.
 
 **Tests/Gate:** unitário Rust; `pnpm test:rust`  
 **Verify:** `pnpm check:rust`  

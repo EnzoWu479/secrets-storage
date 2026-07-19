@@ -3,6 +3,8 @@ use thiserror::Error;
 use uuid::Uuid;
 use zeroize::Zeroizing;
 
+use crate::secrets::move_state::MoveState;
+
 pub const SECRET_RECORD_VERSION: u16 = 1;
 pub const MAX_NAME_BYTES: usize = 256;
 pub const MAX_METADATA_BYTES: usize = 4 * 1024;
@@ -90,6 +92,7 @@ impl SecretDataV1 {
     }
 }
 
+#[derive(Clone)]
 pub struct SecretRecordV1 {
     pub version: u16,
     pub id: Uuid,
@@ -97,6 +100,7 @@ pub struct SecretRecordV1 {
     pub name: String,
     pub created_at_ms: i64,
     pub updated_at_ms: i64,
+    pub move_state: Option<MoveState>,
     pub data: SecretDataV1,
 }
 
@@ -114,6 +118,7 @@ impl SecretRecordV1 {
             name,
             created_at_ms: 0,
             updated_at_ms: 0,
+            move_state: None,
             data: validate_data(data).expect("fixture de teste válida"),
         }
     }

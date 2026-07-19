@@ -10,6 +10,7 @@ use crate::secrets::model::{
     validate_new, CreateSecretInput, SecretDataInput, SecretDataV1, SecretError, SecretRecordV1,
     MAX_RECORDS_PER_SESSION, MAX_SERIALIZED_RECORD_BYTES, SECRET_RECORD_VERSION,
 };
+use crate::secrets::move_state::MoveState;
 
 const CONTENT_FORMAT_V1: u16 = 1;
 
@@ -58,6 +59,7 @@ fn decode_record(value: &Value) -> Result<SecretRecordV1, SecretError> {
             "name",
             "created_at_ms",
             "updated_at_ms",
+            "move_state",
             "data",
         ],
     )?;
@@ -70,6 +72,8 @@ fn decode_record(value: &Value) -> Result<SecretRecordV1, SecretError> {
     let name = text_value(field(fields, "name")?)?.to_owned();
     let created_at_ms = i64_value(field(fields, "created_at_ms")?)?;
     let updated_at_ms = i64_value(field(fields, "updated_at_ms")?)?;
+    let move_state = decode_move_state(field(fields, "move_state")?)?;
+    validate_move_state(revision, move_state.as_ref())?;
     let data = decode_data(field(fields, "data")?)?;
     let validated = validate_new(CreateSecretInput { name, data })?;
 
@@ -80,8 +84,54 @@ fn decode_record(value: &Value) -> Result<SecretRecordV1, SecretError> {
         name: validated.name,
         created_at_ms,
         updated_at_ms,
+        move_state,
         data: validated.data,
     })
+}
+
+fn decode_move_state(value: &Value) -> Result<Option<MoveState>, SecretError> {
+    if matches!(value, Value::Null) {
+        return Ok(None);
+    }
+    let entries = map_value(value)?;
+    match text_value(field(entries, "state")?)? {
+        "pending-move" => {
+            let fields = closed_map(
+                value,
+                &["state", "move_id", "target_session_id", "original_revision"],
+            )?;
+            Ok(Some(MoveState::PendingMove {
+                move_id: uuid_value(field(fields, "move_id")?)?,
+                target_session_id: uuid_value(field(fields, "target_session_id")?)?,
+                original_revision: u64_value(field(fields, "original_revision")?)?,
+            }))
+        }
+        "staged" => {
+            let fields = closed_map(
+                value,
+                &["state", "move_id", "source_session_id", "original_revision"],
+            )?;
+            Ok(Some(MoveState::Staged {
+                move_id: uuid_value(field(fields, "move_id")?)?,
+                source_session_id: uuid_value(field(fields, "source_session_id")?)?,
+                original_revision: u64_value(field(fields, "original_revision")?)?,
+            }))
+        }
+        _ => Err(SecretError::InvalidInput),
+    }
+}
+
+fn validate_move_state(revision: u64, move_state: Option<&MoveState>) -> Result<(), SecretError> {
+    match move_state {
+        None => Ok(()),
+        Some(MoveState::PendingMove {
+            original_revision, ..
+        }) if revision == *original_revision => Ok(()),
+        Some(MoveState::Staged {
+            original_revision, ..
+        }) if original_revision.checked_add(1) == Some(revision) => Ok(()),
+        _ => Err(SecretError::InvalidInput),
+    }
 }
 
 fn decode_data(value: &Value) -> Result<SecretDataInput, SecretError> {
@@ -142,8 +192,47 @@ fn encode_record(record: &SecretRecordV1) -> Result<Value, SecretError> {
         ("name", Value::Text(record.name.clone())),
         ("created_at_ms", Value::Integer(record.created_at_ms.into())),
         ("updated_at_ms", Value::Integer(record.updated_at_ms.into())),
+        ("move_state", encode_move_state(record.move_state.as_ref())),
         ("data", encode_data(&record.data)),
     ]))
+}
+
+fn encode_move_state(move_state: Option<&MoveState>) -> Value {
+    match move_state {
+        None => Value::Null,
+        Some(MoveState::PendingMove {
+            move_id,
+            target_session_id,
+            original_revision,
+        }) => map([
+            ("state", Value::Text("pending-move".into())),
+            ("move_id", Value::Bytes(move_id.as_bytes().to_vec())),
+            (
+                "target_session_id",
+                Value::Bytes(target_session_id.as_bytes().to_vec()),
+            ),
+            (
+                "original_revision",
+                Value::Integer((*original_revision).into()),
+            ),
+        ]),
+        Some(MoveState::Staged {
+            move_id,
+            source_session_id,
+            original_revision,
+        }) => map([
+            ("state", Value::Text("staged".into())),
+            ("move_id", Value::Bytes(move_id.as_bytes().to_vec())),
+            (
+                "source_session_id",
+                Value::Bytes(source_session_id.as_bytes().to_vec()),
+            ),
+            (
+                "original_revision",
+                Value::Integer((*original_revision).into()),
+            ),
+        ]),
+    }
 }
 
 fn encode_data(data: &SecretDataV1) -> Value {
@@ -374,6 +463,7 @@ mod tests {
         validate_new, CreateSecretInput, SecretDataInput, SecretDataV1, SecretKind, SecretRecordV1,
         MAX_SENSITIVE_VALUE_BYTES, SECRET_RECORD_VERSION,
     };
+    use crate::secrets::move_state::MoveState;
 
     fn cbor_bytes(content: &SessionContent) -> Vec<u8> {
         let mut bytes = Vec::new();
@@ -394,6 +484,7 @@ mod tests {
             name: validated.name,
             created_at_ms: 1_700_000_000_000,
             updated_at_ms: 1_700_000_001_000,
+            move_state: None,
             data: validated.data,
         }
     }
@@ -647,5 +738,53 @@ mod tests {
             passphrase: Some("y".repeat(MAX_SENSITIVE_VALUE_BYTES)),
         });
         assert!(encode_records(&[oversized]).is_err());
+    }
+
+    #[test]
+    fn roundtrip_preserva_pending_move() {
+        let mut original = record(SecretDataInput::SecureNote {
+            text: "canary".into(),
+        });
+        original.move_state = Some(MoveState::PendingMove {
+            move_id: Uuid::from_u128(1),
+            target_session_id: Uuid::from_u128(2),
+            original_revision: 7,
+        });
+
+        let decoded = decode_records(&content_for(&original)).expect("decode");
+
+        assert!(matches!(
+            decoded[0].move_state,
+            Some(MoveState::PendingMove {
+                move_id,
+                target_session_id,
+                original_revision: 7
+            }) if move_id == Uuid::from_u128(1) && target_session_id == Uuid::from_u128(2)
+        ));
+    }
+
+    #[test]
+    fn roundtrip_preserva_staged_oculto() {
+        let mut original = record(SecretDataInput::SecureNote {
+            text: "canary".into(),
+        });
+        original.revision = 8;
+        original.move_state = Some(MoveState::Staged {
+            move_id: Uuid::from_u128(1),
+            source_session_id: Uuid::from_u128(2),
+            original_revision: 7,
+        });
+
+        let decoded = decode_records(&content_for(&original)).expect("decode");
+
+        assert!(!decoded[0].is_visible());
+        assert!(matches!(
+            decoded[0].move_state,
+            Some(MoveState::Staged {
+                move_id,
+                source_session_id,
+                original_revision: 7
+            }) if move_id == Uuid::from_u128(1) && source_session_id == Uuid::from_u128(2)
+        ));
     }
 }
