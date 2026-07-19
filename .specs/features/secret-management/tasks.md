@@ -200,6 +200,7 @@ Fonte: [tasks-ui-flowchart.mmd](./tasks-ui-flowchart.mmd)
 
 ### T08 — Implementar summaries, detalhe sanitizado e reveal
 
+**Status:** Done — 2026-07-19
 **What:** adicionar projeções de leitura sem valores e reveal de um único campo com revisão/epoch.  
 **Where:** `src-tauri/src/secrets/service.rs`  
 **Depends on:** T07  
@@ -209,10 +210,10 @@ Fonte: [tasks-ui-flowchart.mmd](./tasks-ui-flowchart.mmd)
 
 **Done when:**
 
-- [ ] RED usa canários e prova ausência em summary, detail, `Debug` e erros.
-- [ ] Reveal rejeita campo público, ausente, revisão obsoleta e epoch inválida.
-- [ ] Somente o campo solicitado cruza a fronteira do retorno explícito.
-- [ ] Gate passa; contagem: baseline + no mínimo 10 unit tests.
+- [x] RED usa canários e prova ausência em summary, detail, `Debug` e erros.
+- [x] Reveal rejeita campo público, ausente, revisão obsoleta e epoch inválida.
+- [x] Somente o campo solicitado cruza a fronteira do retorno explícito.
+- [x] Gate passa; contagem: 16 novos unit tests, 154 no total.
 
 **Tests/Gate:** unitário Rust; `pnpm test:rust`  
 **Verify:** `pnpm check:rust`  
