@@ -1,0 +1,27 @@
+%% Diagram: Dependências de authority e harness | Date: 2026-07-17
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#e0e7ff', 'primaryTextColor': '#1e293b', 'primaryBorderColor': '#6366f1', 'secondaryColor': '#d1fae5', 'tertiaryColor': '#fef3c7', 'lineColor': '#94a3b8', 'background': '#ffffff', 'mainBkg': '#f8fafc', 'nodeBorder': '#cbd5e1', 'clusterBkg': '#f8fafc', 'clusterBorder': '#cbd5e1', 'edgeLabelBackground': '#ffffff', 'textColor': '#334155'}}}%%
+flowchart LR
+    diagnostics["T03<br/>Diagnóstico"]
+    lockCoordinator["T04<br/>Lock por epoch"]
+    secureMemory["T05<br/>Memória Windows"]
+    appManifest["T09<br/>AppManifest"]
+    proofBuild["T11<br/>Build de prova"]
+    proofCommands["T12<br/>Comandos IPC"]
+    proofUi["T13<br/>UI do harness"]
+    webdriver["T14<br/>WebDriver e XSS"]
+
+    diagnostics --> proofCommands
+    lockCoordinator --> proofCommands
+    secureMemory --> proofCommands
+    appManifest --> proofCommands
+    proofBuild --> proofCommands
+    proofBuild --> proofUi
+    proofCommands --> webdriver
+    proofUi --> webdriver
+
+    classDef prerequisite fill:#f1f5f9,stroke:#64748b,color:#1e293b
+    classDef implementation fill:#e0e7ff,stroke:#4f46e5,color:#1e1b4b
+    classDef verification fill:#d1fae5,stroke:#059669,color:#064e3b
+    class diagnostics,lockCoordinator,secureMemory,appManifest,proofBuild prerequisite
+    class proofCommands,proofUi implementation
+    class webdriver verification

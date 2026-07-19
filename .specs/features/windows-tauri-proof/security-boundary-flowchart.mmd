@@ -1,0 +1,44 @@
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#e0e7ff', 'primaryTextColor': '#1e293b', 'primaryBorderColor': '#6366f1', 'secondaryColor': '#d1fae5', 'tertiaryColor': '#fef3c7', 'lineColor': '#94a3b8', 'background': '#ffffff', 'mainBkg': '#f8fafc', 'nodeBorder': '#cbd5e1', 'clusterBkg': '#f8fafc', 'clusterBorder': '#cbd5e1', 'edgeLabelBackground': '#ffffff', 'textColor': '#334155'}}}%%
+flowchart LR
+    subgraph Untrusted["WebView não confiável"]
+        UI["UI local"]
+        Proof["Janela de prova"]
+    end
+    subgraph Boundary["Fronteira Tauri"]
+        ACL["Runtime Authority"]
+        Command["Comandos estreitos"]
+    end
+    subgraph Core["Core Rust"]
+        Guard["Guarda de autorização"]
+        Lock["Coordenador de lock"]
+        Memory["Região sensível"]
+    end
+    subgraph Platform["Windows"]
+        Events["Bomba de eventos"]
+        OS["WTS e energia"]
+    end
+    subgraph Verification["Verificação"]
+        Recorder["Coletor allowlisted"]
+        Scanner["Scanner de bundle"]
+        Report["Relatório versionado"]
+    end
+    UI -->|"invoke permitido"| ACL
+    Proof -->|"somente build de prova"| ACL
+    ACL --> Command
+    Command --> Guard
+    Guard -->|"epoch válida"| Memory
+    OS --> Events
+    Events -->|"lock idempotente"| Lock
+    Lock -->|"incrementa epoch e zera"| Memory
+    Guard --> Recorder
+    Lock --> Recorder
+    Scanner --> Report
+    Recorder --> Report
+    classDef untrusted fill:#fef3c7,stroke:#d97706,color:#78350f
+    classDef boundary fill:#e0e7ff,stroke:#4f46e5,color:#1e1b4b
+    classDef secure fill:#d1fae5,stroke:#059669,color:#064e3b
+    classDef verify fill:#f1f5f9,stroke:#64748b,color:#1e293b
+    class UI,Proof untrusted
+    class ACL,Command boundary
+    class Guard,Lock,Memory,Events,OS secure
+    class Recorder,Scanner,Report verify

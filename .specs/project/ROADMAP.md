@@ -26,7 +26,7 @@
 - Definir formato do cofre, metadados autenticados e estratégia de migração.
 - Criar vetores de teste e plano de revisão independente.
 
-**Prova de integração Windows e Tauri** — PLANNED
+**Prova de integração Windows e Tauri** — PAUSED (T01–T14 concluídas)
 
 - Validar isolamento entre interface e comandos privilegiados.
 - Validar armazenamento seguro local e comportamento de memória possível no Windows.

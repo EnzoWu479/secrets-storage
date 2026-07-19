@@ -1,11 +1,25 @@
 # State
 
-**Last Updated:** 2026-07-16
-**Current Work:** Backend cripto do M0 (`crypto-format`, fatia Sessões + desbloqueio) **COMPLETO** — todas as 5 fases (T1–T8) com gate `pnpm check:rust` verde (**53 testes**): `crypto::{kdf,keys,aead,keyring,envelope,vectors}` (+`codec` interno) + `review-plan.md`. Segue como **design candidato**: não fecha o gate D-05 (modelo de ameaças) nem fixa PT-01/PT-02; a revisão independente descrita em `crypto-format/review-plan.md` é o próximo marco. App funcional frontend-only (AD-023) segue como placeholder inseguro em paralelo. Comandos Tauri / orquestração de app-unlock ficam para a feature `local-sessions`.
+**Last Updated:** 2026-07-19
+**Current Work:** A feature M0 `windows-tauri-proof` foi **pausada após T14** por decisão do usuário. T01–T14 estão implementadas; T15–T22 permanecem documentadas e pendentes, sem alegação de conclusão. O próximo trabalho será escolhido em uma nova spec. O `crypto-format` segue candidato e bloqueado pela revisão independente/D-05; o app frontend-only permanece placeholder inseguro.
 
 ---
 
 ## Recent Decisions (Last 60 days)
+
+### AD-029: Pausa da prova Windows/Tauri após o gate de authority (2026-07-19)
+
+**Decision:** Encerrar a execução corrente de `windows-tauri-proof` após T14 e seguir para outra spec.
+**Reason:** Decisão explícita do usuário de interromper esta feature neste ponto.
+**Trade-off:** Authority/ACL/XSS possuem cobertura automatizada, mas panic/saídas, scanner de release, DPAPI, orquestração, CI, laboratório e consolidação final (T15–T22) continuam pendentes.
+**Impact:** A feature não deve ser tratada como completa; uma retomada começa em T15.
+
+### AD-028: Remoção do Graphify do fluxo do projeto (2026-07-17)
+
+**Decision:** Abandonar o Graphify neste repositório, removendo a regra obrigatória do `AGENTS.md`, a skill local versionada, os artefatos do grafo e os ignores específicos.
+**Reason:** Decisão explícita do usuário de não continuar usando o Graphify no projeto.
+**Trade-off:** O projeto deixa de manter um grafo de conhecimento navegável e passa a depender diretamente do código, das specs e das ferramentas normais de busca para exploração.
+**Impact:** Tarefas futuras não devem executar nem exigir atualização do Graphify. Instalações globais permanecem fora do escopo e não foram alteradas.
 
 ### AD-027: Fases 4–5 do backend cripto — vetores e plano de revisão; fatia completa (2026-07-16)
 
