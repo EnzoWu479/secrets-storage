@@ -1,7 +1,7 @@
 # State
 
 **Last Updated:** 2026-07-19
-**Current Work:** M1 `secret-management` com **Spec, Design e 24 Tasks aprovados** em 2026-07-19; execução iniciada em T01. Os 15/15 requisitos estão mapeados. G1 explicita que IPC de produção e E2E dependem de `local-sessions`; modelo, codec e serviços podem avançar antes com um fake determinístico. O store frontend-only não pode virar fonte de verdade. O modelo de ameaças segue em revisão por AD-022; `windows-tauri-proof` está pausada após T14.
+**Current Work:** M1 `secret-management` com **Spec, Design e 24 Tasks aprovados** em 2026-07-19; T01–T03 concluídas e próxima tarefa disponível T05 (`SessionAccess`). O core possui agora os módulos da feature e o modelo tipado/validado, com 93 testes Rust verdes. G1 explicita que IPC de produção e E2E dependem de `local-sessions`; modelo, codec e serviços podem avançar antes com um fake determinístico. O store frontend-only não pode virar fonte de verdade. O modelo de ameaças segue em revisão por AD-022; `windows-tauri-proof` está pausada após T14.
 
 ---
 

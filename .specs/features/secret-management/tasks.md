@@ -95,6 +95,7 @@ Fonte: [tasks-ui-flowchart.mmd](./tasks-ui-flowchart.mmd)
 
 ### T03 — Implementar o modelo tipado e validação [P]
 
+**Status:** Done — 2026-07-19
 **What:** implementar `SecretRecordV1`, `SecretDataV1`, `SecretText`, inputs fechados, revisões e limites v1.  
 **Where:** `src-tauri/src/secrets/model.rs`  
 **Depends on:** T02  
@@ -104,10 +105,10 @@ Fonte: [tasks-ui-flowchart.mmd](./tasks-ui-flowchart.mmd)
 
 **Done when:**
 
-- [ ] RED cobre os cinco schemas, unknown fields, NUL, limites, datas e revisão obsoleta.
-- [ ] `SecretText` não implementa `Debug`/`Display` e limpa seu buffer no drop.
-- [ ] GREEN valida em bytes UTF-8 antes de persistência e não trunca.
-- [ ] Gate passa; contagem: baseline + no mínimo 15 unit tests.
+- [x] RED cobre os cinco schemas, unknown fields, NUL, limites, datas e revisão obsoleta.
+- [x] `SecretText` não implementa `Debug`/`Display` e usa `Zeroizing<String>` para limpar seu buffer no drop.
+- [x] GREEN valida em bytes UTF-8 antes de persistência e não trunca.
+- [x] Gate passa; contagem: 93 testes Rust, incluindo 18 novos unit tests.
 
 **Tests/Gate:** unitário Rust; `pnpm test:rust`  
 **Verify:** `pnpm check:rust`  
