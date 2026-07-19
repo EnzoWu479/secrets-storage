@@ -180,23 +180,23 @@ O Design resolve as escolhas abaixo; permanecem sujeitas à aprovação do docum
 
 | Requirement ID | Parent | Story | Phase | Status |
 | --- | --- | --- | --- | --- |
-| SECMGMT-01 | SECRET-01 | Tipos e modelo comum | Design | In Design |
-| SECMGMT-02 | SECRET-01 | Criar e persistir | Design | In Design |
-| SECMGMT-03 | SECRET-01 | Consultar e editar | Design | In Design |
-| SECMGMT-04 | SECRET-01 | Excluir | Design | In Design |
-| SECMGMT-05 | SECRET-01 | Revisão e concorrência | Design | In Design |
-| SECMGMT-06 | SECRET-01 | Persistência fail-closed | Design | In Design |
-| SECMGMT-07 | SECRET-01 | Listagem sem valores | Design | In Design |
-| SECMGMT-08 | SECRET-01 | Reveal controlado | Design | In Design |
-| SECMGMT-09 | SECRET-01 | Redaction e limpeza de UI | Design | In Design |
-| SECMGMT-10 | SECRET-03 | Busca somente desbloqueadas | Design | In Design |
-| SECMGMT-11 | SECRET-03 | Privacidade da consulta | Design | In Design |
-| SECMGMT-12 | SECRET-03 | Movimentação autorizada | Design | In Design |
-| SECMGMT-13 | SECRET-03 | Movimentação sem perda | Design | In Design |
-| SECMGMT-14 | SECRET-02 | Cópia e limpeza | Design | In Design |
-| SECMGMT-15 | SECRET-02 | Limites honestos do clipboard | Design | In Design |
+| SECMGMT-01 | SECRET-01 | Tipos e modelo comum | Tasks | In Tasks |
+| SECMGMT-02 | SECRET-01 | Criar e persistir | Tasks | In Tasks |
+| SECMGMT-03 | SECRET-01 | Consultar e editar | Tasks | In Tasks |
+| SECMGMT-04 | SECRET-01 | Excluir | Tasks | In Tasks |
+| SECMGMT-05 | SECRET-01 | Revisão e concorrência | Tasks | In Tasks |
+| SECMGMT-06 | SECRET-01 | Persistência fail-closed | Tasks | In Tasks |
+| SECMGMT-07 | SECRET-01 | Listagem sem valores | Tasks | In Tasks |
+| SECMGMT-08 | SECRET-01 | Reveal controlado | Tasks | In Tasks |
+| SECMGMT-09 | SECRET-01 | Redaction e limpeza de UI | Tasks | In Tasks |
+| SECMGMT-10 | SECRET-03 | Busca somente desbloqueadas | Tasks | In Tasks |
+| SECMGMT-11 | SECRET-03 | Privacidade da consulta | Tasks | In Tasks |
+| SECMGMT-12 | SECRET-03 | Movimentação autorizada | Tasks | In Tasks |
+| SECMGMT-13 | SECRET-03 | Movimentação sem perda | Tasks | In Tasks |
+| SECMGMT-14 | SECRET-02 | Cópia e limpeza | Tasks | In Tasks |
+| SECMGMT-15 | SECRET-02 | Limites honestos do clipboard | Tasks | In Tasks |
 
-**Coverage:** 15 requisitos definidos; `SECRET-01…03` cobertos; 15 em Design; 0 mapeados para tarefas.
+**Coverage:** 15 requisitos definidos; `SECRET-01…03` cobertos; 15 em Tasks; 15/15 mapeados para 24 tarefas no rascunho.
 
 ## Success Criteria
 

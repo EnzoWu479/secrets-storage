@@ -304,7 +304,7 @@ Nenhum teste persiste canários em snapshots ou relatórios; diretórios tempor�
 | SECMGMT-14 | `ClipboardPort`, timeout e lock |
 | SECMGMT-15 | sequência do clipboard e UX honesta |
 
-**Coverage:** 15/15 requisitos cobertos pelo Design; 0 mapeados para tarefas.
+**Coverage:** 15/15 requisitos cobertos pelo Design e mapeados para 24 tarefas em [tasks.md](./tasks.md).
 
 ## Fontes técnicas verificadas
 

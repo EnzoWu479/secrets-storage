@@ -1,7 +1,7 @@
 # State
 
 **Last Updated:** 2026-07-19
-**Current Work:** M1 `secret-management` com **Spec e Design aprovados** em 2026-07-19; próxima fase: Tasks. O Design cobre 15/15 requisitos com modelo tipado, comandos estreitos, persistência cifrada atômica, reveal efêmero, busca sem índice, move crash-safe e clipboard core-only. A execução depende de sessões locais persistentes/criptografadas e não pode promover o store frontend-only a fonte de verdade. O modelo de ameaças segue em revisão por AD-022; `windows-tauri-proof` está pausada após T14.
+**Current Work:** M1 `secret-management` com **Spec, Design e 24 Tasks aprovados** em 2026-07-19; execução iniciada em T01. Os 15/15 requisitos estão mapeados. G1 explicita que IPC de produção e E2E dependem de `local-sessions`; modelo, codec e serviços podem avançar antes com um fake determinístico. O store frontend-only não pode virar fonte de verdade. O modelo de ameaças segue em revisão por AD-022; `windows-tauri-proof` está pausada após T14.
 
 ---
 

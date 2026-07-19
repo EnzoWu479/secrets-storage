@@ -1,0 +1,40 @@
+%% Diagram: Dependências de integração e UI do gerenciamento de segredos | Date: 2026-07-19
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4f46e5', 'primaryTextColor': '#ffffff', 'primaryBorderColor': '#3730a3', 'lineColor': '#94a3b8', 'secondaryColor': '#10b981', 'tertiaryColor': '#f59e0b', 'background': '#ffffff', 'mainBkg': '#f8fafc', 'nodeBorder': '#cbd5e1', 'clusterBkg': '#f1f5f9', 'clusterBorder': '#e2e8f0', 'titleColor': '#1e293b', 'edgeLabelBackground': '#ffffff', 'textColor': '#334155'}}}%%
+flowchart LR
+    gateSessions{{"G1: sessões locais<br/>prontas"}}
+    task13["T13: adaptador<br/>Win32"]
+    task14["T14: comandos<br/>e DTOs"]
+    task15["T15: authority<br/>e wiring"]
+    task16["T16: API<br/>frontend"]
+    task17["T17: store de<br/>apresentação"]
+    task18["T18: lista<br/>e busca"]
+    task19["T19: form<br/>create/edit"]
+    task20["T20: detalhe<br/>e lifecycle"]
+    task21["T21: diálogo<br/>de move"]
+    task22["T22: rotas e<br/>remoção do placeholder"]
+    task23["T23: E2E<br/>Windows"]
+    task24["T24: rastreabilidade<br/>final"]
+
+    gateSessions --> task15
+    task13 --> task15
+    task14 --> task15
+    task15 --> task16
+    task16 --> task17
+    task17 --> task18
+    task17 --> task19
+    task17 --> task20
+    task17 --> task21
+    task18 --> task22
+    task19 --> task22
+    task20 --> task22
+    task21 --> task22
+    gateSessions --> task23
+    task22 --> task23
+    task23 --> task24
+
+    classDef gate fill:#f59e0b,color:#1e293b,stroke:#d97706;
+    classDef integration fill:#10b981,color:#ffffff,stroke:#059669;
+    classDef ui fill:#4f46e5,color:#ffffff,stroke:#3730a3;
+    class gateSessions gate;
+    class task13,task14,task15,task23,task24 integration;
+    class task16,task17,task18,task19,task20,task21,task22 ui;

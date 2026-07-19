@@ -1,0 +1,48 @@
+%% Diagram: Dependências do core de gerenciamento de segredos | Date: 2026-07-19
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#4f46e5', 'primaryTextColor': '#ffffff', 'primaryBorderColor': '#3730a3', 'lineColor': '#94a3b8', 'secondaryColor': '#10b981', 'tertiaryColor': '#f59e0b', 'background': '#ffffff', 'mainBkg': '#f8fafc', 'nodeBorder': '#cbd5e1', 'clusterBkg': '#f1f5f9', 'clusterBorder': '#e2e8f0', 'titleColor': '#1e293b', 'edgeLabelBackground': '#ffffff', 'textColor': '#334155'}}}%%
+flowchart LR
+    gateSessions{{"G1: sessões locais<br/>prontas"}}
+    task01["T01: contrato<br/>de testes"]
+    task02["T02: módulos<br/>da feature"]
+    task03["T03: modelo<br/>tipado"]
+    task04["T04: codec<br/>CBOR"]
+    task05["T05: contrato<br/>SessionAccess"]
+    task06["T06: writer<br/>atômico"]
+    task07["T07: CRUD<br/>do serviço"]
+    task08["T08: leitura<br/>e reveal"]
+    task09["T09: busca<br/>e cursores"]
+    task10["T10: máquina<br/>de move"]
+    task11["T11: move<br/>e recovery"]
+    task12["T12: domínio<br/>do clipboard"]
+    task13["T13: adaptador<br/>Win32"]
+    task14["T14: comandos<br/>e DTOs"]
+
+    task01 --> task02
+    task02 --> task03
+    task02 --> task05
+    task02 --> task06
+    task03 --> task04
+    task03 --> task10
+    task05 --> task10
+    task03 --> task12
+    task04 --> task07
+    task05 --> task07
+    task06 --> task07
+    task07 --> task08
+    task08 --> task09
+    task07 --> task11
+    task10 --> task11
+    task02 --> task13
+    task12 --> task13
+    gateSessions --> task14
+    task08 --> task14
+    task09 --> task14
+    task11 --> task14
+    task12 --> task14
+
+    classDef gate fill:#f59e0b,color:#1e293b,stroke:#d97706;
+    classDef core fill:#4f46e5,color:#ffffff,stroke:#3730a3;
+    classDef platform fill:#10b981,color:#ffffff,stroke:#059669;
+    class gateSessions gate;
+    class task01,task02,task03,task04,task05,task07,task08,task09,task10,task11,task12,task14 core;
+    class task06,task13 platform;

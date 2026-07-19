@@ -52,7 +52,7 @@
 - Exibir periodicamente que não existe recuperação de senha no v1.
 - Evitar persistência acidental de material sensível.
 
-**Gerenciamento de segredos** — DESIGNED
+**Gerenciamento de segredos** — TASKED
 
 - Armazenar senhas, API keys, tokens, notas secretas e chaves SSH.
 - Pesquisar simultaneamente nas sessões desbloqueadas e exigir origem e destino desbloqueados para mover registros entre sessões.
