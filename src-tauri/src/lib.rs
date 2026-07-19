@@ -4,6 +4,7 @@ pub mod platform;
 pub mod proof;
 pub mod security;
 
+use std::any::Any;
 use std::sync::Arc;
 
 use security::lock::{LockCoordinator, LockOutcome, LockReason};
@@ -16,7 +17,7 @@ pub enum ExitLifecycleEvent {
 }
 
 pub struct ApplicationSensitiveState {
-    _owned: Box<dyn Send + 'static>,
+    _owned: Box<dyn Any + Send + 'static>,
 }
 
 impl ApplicationSensitiveState {
@@ -24,6 +25,11 @@ impl ApplicationSensitiveState {
         Self {
             _owned: Box::new(state),
         }
+    }
+
+    #[cfg(feature = "security-proof")]
+    pub(crate) fn value_mut<T: Send + 'static>(&mut self) -> Option<&mut T> {
+        self._owned.downcast_mut()
     }
 }
 
@@ -89,6 +95,13 @@ pub fn run() {
 
     let lifecycle = ApplicationLifecycle::new();
     let builder = builder.manage(lifecycle.coordinator());
+    #[cfg(all(windows, feature = "security-proof"))]
+    let builder = builder.invoke_handler(tauri::generate_handler![
+        proof::commands::proof_install_canary,
+        proof::commands::proof_authorized_probe,
+        proof::commands::proof_lock,
+        proof::commands::proof_status
+    ]);
     let app = builder
         .build(tauri::generate_context!())
         .expect("failed to build Secrets Storage");
