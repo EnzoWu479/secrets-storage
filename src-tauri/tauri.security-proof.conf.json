@@ -1,0 +1,22 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "app": {
+    "windows": [
+      {
+        "label": "security-proof",
+        "title": "Secrets Storage Security Proof",
+        "width": 900,
+        "height": 680,
+        "minWidth": 760,
+        "minHeight": 560,
+        "devtools": false
+      }
+    ],
+    "security": {
+      "capabilities": ["security-proof"]
+    }
+  },
+  "bundle": {
+    "active": false
+  }
+}

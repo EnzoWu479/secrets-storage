@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "tauri dev",
     "build": "tauri build",
+    "build:security-proof": "tauri build --config src-tauri/tauri.security-proof.conf.json --features security-proof",
     "tauri": "tauri",
     "test:frontend": "vitest run",
     "format:rust": "cargo fmt --manifest-path src-tauri/Cargo.toml --check",

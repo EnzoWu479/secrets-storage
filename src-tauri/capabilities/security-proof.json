@@ -1,0 +1,13 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "security-proof",
+  "description": "Isolated local window for the Windows and Tauri security proof",
+  "local": true,
+  "windows": ["security-proof"],
+  "permissions": [
+    "allow-proof-install-canary",
+    "allow-proof-authorized-probe",
+    "allow-proof-lock",
+    "allow-proof-status"
+  ]
+}
