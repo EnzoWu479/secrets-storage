@@ -302,6 +302,7 @@ Fonte: [tasks-ui-flowchart.mmd](./tasks-ui-flowchart.mmd)
 
 ### T13 — Implementar o adaptador Win32 do clipboard
 
+**Status:** Done — 2026-07-19
 **What:** escrever `CF_UNICODETEXT`, capturar sequence e limpar condicionalmente com retries curtos.  
 **Where:** `src-tauri/src/platform/windows/clipboard.rs`, `src-tauri/tests/windows_secret_platform.rs`, `src-tauri/Cargo.toml`  
 **Depends on:** T02, T12  
@@ -311,10 +312,10 @@ Fonte: [tasks-ui-flowchart.mmd](./tasks-ui-flowchart.mmd)
 
 **Done when:**
 
-- [ ] RED serial cobre copy, sequence, conteúdo substituído, clipboard ocupado e clear.
-- [ ] Somente features Win32 estritamente necessárias são adicionadas.
-- [ ] Falha de confirmação nunca é reportada como limpeza garantida.
-- [ ] Gate serial passa; contagem da suíte Windows: anterior + no mínimo 6 testes.
+- [x] RED serial cobre copy, sequence, conteúdo substituído, clipboard ocupado e clear.
+- [x] Somente `Win32_System_DataExchange` foi adicionada às features Win32.
+- [x] Falha de confirmação nunca é reportada como limpeza garantida.
+- [x] Gate serial passa; contagem: 8 testes T06 + 6 testes T13, com 1 helper ignorado.
 
 **Tests/Gate:** integração Windows serial; `cargo test --manifest-path src-tauri/Cargo.toml --test windows_secret_platform -- --test-threads=1`  
 **Verify:** comando acima + `pnpm check:rust`  
