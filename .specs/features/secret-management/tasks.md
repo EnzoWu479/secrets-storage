@@ -137,6 +137,7 @@ Fonte: [tasks-ui-flowchart.mmd](./tasks-ui-flowchart.mmd)
 
 ### T05 — Definir `SessionAccess` e fake determinístico [P]
 
+**Status:** Done — 2026-07-19
 **What:** definir o contrato de autorização de uma/duas sessões e um fake apenas de teste para lock, epoch, revisão e falhas.  
 **Where:** `src-tauri/src/secrets/session_access.rs`  
 **Depends on:** T02  
@@ -146,10 +147,10 @@ Fonte: [tasks-ui-flowchart.mmd](./tasks-ui-flowchart.mmd)
 
 **Done when:**
 
-- [ ] RED demonstra negação após lock/epoch e ordem determinística de duas sessões.
-- [ ] O contrato não expõe senha, GMK, key material ou path.
-- [ ] Fake injeta falha antes do commit e revalida epoch.
-- [ ] Gate passa; contagem: baseline + no mínimo 8 unit tests.
+- [x] RED demonstra negação após lock/epoch e ordem determinística de duas sessões.
+- [x] O contrato não expõe senha, GMK, key material ou path.
+- [x] Fake injeta falha antes do commit e revalida epoch.
+- [x] Gate passa; contagem: 115 testes Rust, incluindo 9 novos unit tests.
 
 **Tests/Gate:** unitário Rust; `pnpm test:rust`  
 **Verify:** `pnpm check:rust`  
