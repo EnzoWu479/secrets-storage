@@ -158,6 +158,7 @@ Fonte: [tasks-ui-flowchart.mmd](./tasks-ui-flowchart.mmd)
 
 ### T06 — Implementar `AtomicVaultWriter`
 
+**Status:** Done — 2026-07-19
 **What:** gravar, substituir e recuperar somente envelopes cifrados usando o protocolo Windows do design.  
 **Where:** `src-tauri/src/storage/atomic_vault.rs`, `src-tauri/tests/windows_secret_platform.rs`, `src-tauri/Cargo.toml`  
 **Depends on:** T02  
@@ -167,10 +168,10 @@ Fonte: [tasks-ui-flowchart.mmd](./tasks-ui-flowchart.mmd)
 
 **Done when:**
 
-- [ ] RED serial cobre primeiro commit, replace, backup válido, destino corrompido e temp órfão.
-- [ ] Temp usa criação exclusiva no mesmo diretório e flush antes do replace.
-- [ ] Recovery promove somente destino/backup autenticado e nunca temp.
-- [ ] Gate serial passa; contagem: no mínimo 6 integration tests Windows.
+- [x] RED serial cobre primeiro commit, replace, backup válido, destino corrompido e temp órfão.
+- [x] Temp usa criação exclusiva no mesmo diretório e flush antes do replace.
+- [x] Recovery promove somente destino/backup autenticado e nunca temp.
+- [x] Gate serial passa; contagem: 8 integration tests Windows e 138 unit tests Rust.
 
 **Tests/Gate:** integração Windows serial; `cargo test --manifest-path src-tauri/Cargo.toml --test windows_secret_platform -- --test-threads=1`  
 **Verify:** comando acima + `pnpm check:rust`  
