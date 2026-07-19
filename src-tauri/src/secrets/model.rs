@@ -31,6 +31,12 @@ pub enum SecretError {
     InvalidInput,
     #[error("revisão do segredo está obsoleta")]
     RevisionConflict,
+    #[error("segredo não encontrado")]
+    NotFound,
+    #[error("limite de segredos da sessão atingido")]
+    CapacityExceeded,
+    #[error("identificador de segredo já existe")]
+    IdCollision,
 }
 
 pub struct SecretText(Zeroizing<String>);

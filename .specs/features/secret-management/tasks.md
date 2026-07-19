@@ -179,8 +179,9 @@ Fonte: [tasks-ui-flowchart.mmd](./tasks-ui-flowchart.mmd)
 
 ### T07 — Implementar CRUD no `SecretService`
 
+**Status:** Done — 2026-07-19
 **What:** implementar create/detail-for-update/update/delete com revisão otimista e commit autorizado.  
-**Where:** `src-tauri/src/secrets/service.rs`, `src-tauri/tests/secret_management.rs`  
+**Where:** `src-tauri/src/secrets/{service.rs,model.rs,mod.rs}`, `src-tauri/tests/secret_management.rs`
 **Depends on:** T04, T05, T06  
 **Reuses:** codec, fake `SessionAccess`, writer e padrão `commit_if_current`  
 **Requirements:** SECMGMT-02…06  
@@ -188,10 +189,10 @@ Fonte: [tasks-ui-flowchart.mmd](./tasks-ui-flowchart.mmd)
 
 **Done when:**
 
-- [ ] RED cobre CRUD dos cinco tipos, revisão obsoleta, lock/epoch e falha antes do commit.
-- [ ] Sucesso só é retornado após arquivo e memória avançarem na mesma linearização.
-- [ ] Falha preserva a última versão confirmada.
-- [ ] Gate serial passa; contagem: no mínimo 20 integration tests da suíte.
+- [x] RED cobre CRUD dos cinco tipos, revisão obsoleta, lock/epoch e falha antes do commit.
+- [x] Sucesso só é retornado após o commit autorizado avançar conteúdo e revisão na mesma linearização.
+- [x] Falha preserva a última versão confirmada.
+- [x] Gate serial passa; contagem: 25 integration tests da suíte.
 
 **Tests/Gate:** integração Rust serial; `cargo test --manifest-path src-tauri/Cargo.toml --test secret_management -- --test-threads=1`  
 **Verify:** comando acima + `pnpm check:rust`  
