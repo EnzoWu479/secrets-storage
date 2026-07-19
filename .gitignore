@@ -1,15 +1,10 @@
-# Graphify local runtime and rebuild cache
-graphify-out/.graphify_python
-graphify-out/.graphify_root
-graphify-out/.graphify_analysis.json
-graphify-out/cache/
-graphify-out/[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]/
-
 # Frontend
 node_modules/
 dist/
 *.local
 *.log
+.artifacts/
+.pnpm-store/
 
 # Rust and Tauri generated files
 src-tauri/target/
