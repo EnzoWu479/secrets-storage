@@ -138,7 +138,7 @@ mod fake {
     struct FakeInner {
         sessions: BTreeMap<Uuid, FakeSession>,
         invalidate_before_commit: BTreeSet<Uuid>,
-        fail_before_commit: bool,
+        commits_until_failure: Option<usize>,
         last_lock_order: Vec<Uuid>,
     }
 
@@ -178,7 +178,12 @@ mod fake {
         }
 
         pub fn fail_before_next_commit(&self) {
-            self.acquire_fail_closed().fail_before_commit = true;
+            self.fail_before_commit_number(1);
+        }
+
+        pub fn fail_before_commit_number(&self, number: usize) {
+            assert!(number > 0, "a fronteira de commit começa em um");
+            self.acquire_fail_closed().commits_until_failure = Some(number);
         }
 
         pub fn content(&self, id: Uuid) -> Option<SessionContent> {
@@ -252,6 +257,19 @@ mod fake {
                     self.inner.clear_poison();
                     inner
                 }
+            }
+        }
+
+        fn should_fail_commit(inner: &mut FakeInner) -> bool {
+            let Some(remaining) = inner.commits_until_failure.as_mut() else {
+                return false;
+            };
+            if *remaining == 1 {
+                inner.commits_until_failure = None;
+                true
+            } else {
+                *remaining -= 1;
+                false
             }
         }
     }
@@ -358,8 +376,7 @@ mod fake {
             .map_err(SessionAccessError::Operation)?;
 
             let mut inner = self.acquire_fail_closed();
-            if inner.fail_before_commit {
-                inner.fail_before_commit = false;
+            if Self::should_fail_commit(&mut inner) {
                 return Err(SessionAccessError::InjectedCommitFailure);
             }
             Self::invalidate_requested(&mut inner, session_id);
@@ -418,8 +435,7 @@ mod fake {
             .map_err(SessionAccessError::Operation)?;
 
             let mut inner = self.acquire_fail_closed();
-            if inner.fail_before_commit {
-                inner.fail_before_commit = false;
+            if Self::should_fail_commit(&mut inner) {
                 return Err(SessionAccessError::InjectedCommitFailure);
             }
             Self::invalidate_requested(&mut inner, first);

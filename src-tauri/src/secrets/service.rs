@@ -1,3 +1,4 @@
+use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Write as _;
 
 use sha2::{Digest, Sha256};
@@ -8,6 +9,9 @@ use crate::secrets::codec::{decode_records, encode_records};
 use crate::secrets::model::{
     apply_patch, validate_new, CreateSecretInput, SecretDataV1, SecretError, SecretKind,
     SecretPatchInput, SecretRecordV1, SecretText, MAX_RECORDS_PER_SESSION, SECRET_RECORD_VERSION,
+};
+use crate::secrets::move_state::{
+    begin_move, commit_staged, rollback_pending, staged_copy, MoveState, MoveStateError,
 };
 use crate::secrets::session_access::{SessionAccess, SessionAccessError};
 
@@ -142,6 +146,23 @@ pub struct SecretPage {
     pub items: Vec<SecretSummary>,
     pub next_cursor: Option<String>,
     pub total: usize,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum MoveCompletion {
+    Committed,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct MoveResult {
+    pub id: Uuid,
+    pub revision: u64,
+    pub state: MoveCompletion,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct RecoveryResult {
+    pub recovered: usize,
 }
 
 pub struct SecretService<'a, A, C, R> {
@@ -296,6 +317,174 @@ where
         paginate(items, cursor, limit, cursor_version(&stamps))
     }
 
+    pub fn move_secret(
+        &self,
+        source_session_id: Uuid,
+        target_session_id: Uuid,
+        secret_id: Uuid,
+        expected_revision: u64,
+    ) -> Result<MoveResult, SecretServiceError> {
+        if source_session_id == target_session_id {
+            return Err(SecretServiceError::InvalidInput);
+        }
+        let move_id = self.random.next_uuid();
+
+        self.access.write_two_authorized(
+            source_session_id,
+            target_session_id,
+            |mut source, target| {
+                let mut source_records = decode_records(source.content())?;
+                let target_records = decode_records(target.content())?;
+                if target_records.iter().any(|record| record.id == secret_id) {
+                    return Err(SecretError::IdCollision);
+                }
+                let record = source_records
+                    .iter_mut()
+                    .find(|record| record.id == secret_id && record.is_visible())
+                    .ok_or(SecretError::NotFound)?;
+                begin_move(
+                    record,
+                    source_session_id,
+                    target_session_id,
+                    move_id,
+                    expected_revision,
+                )
+                .map_err(map_move_error)?;
+                source.content_mut().secrets = encode_records(&source_records)?;
+                Ok(())
+            },
+        )?;
+
+        self.access.write_two_authorized(
+            source_session_id,
+            target_session_id,
+            |source, mut target| {
+                let source_records = decode_records(source.content())?;
+                let mut target_records = decode_records(target.content())?;
+                if target_records.iter().any(|record| record.id == secret_id) {
+                    return Err(SecretError::IdCollision);
+                }
+                let source_record = source_records
+                    .iter()
+                    .find(|record| pending_matches(record, secret_id, move_id, target_session_id))
+                    .ok_or(SecretError::MoveConflict)?;
+                target_records
+                    .push(staged_copy(source_record, source_session_id).map_err(map_move_error)?);
+                target.content_mut().secrets = encode_records(&target_records)?;
+                Ok(())
+            },
+        )?;
+
+        self.remove_source_after_staged(source_session_id, target_session_id, secret_id, move_id)?;
+        let revision =
+            self.commit_destination(source_session_id, target_session_id, secret_id, move_id)?;
+
+        Ok(MoveResult {
+            id: secret_id,
+            revision,
+            state: MoveCompletion::Committed,
+        })
+    }
+
+    pub fn recover_moves(
+        &self,
+        source_session_id: Uuid,
+        target_session_id: Uuid,
+    ) -> Result<RecoveryResult, SecretServiceError> {
+        if source_session_id == target_session_id {
+            return Err(SecretServiceError::InvalidInput);
+        }
+        let authorized = self
+            .access
+            .read_all_authorized(|_, session| decode_records(session.content()))?;
+        let source_records = authorized
+            .iter()
+            .find(|result| result.session_id == source_session_id)
+            .map(|result| result.value.as_slice())
+            .ok_or(SecretServiceError::Access(SessionAccessError::Locked))?;
+        let target_records = authorized
+            .iter()
+            .find(|result| result.session_id == target_session_id)
+            .map(|result| result.value.as_slice())
+            .ok_or(SecretServiceError::Access(SessionAccessError::Locked))?;
+
+        let pending = source_records
+            .iter()
+            .filter_map(|record| match record.move_state {
+                Some(MoveState::PendingMove {
+                    move_id,
+                    target_session_id: marker_target,
+                    original_revision,
+                }) if marker_target == target_session_id
+                    && record.revision == original_revision =>
+                {
+                    Some((record.id, move_id, original_revision))
+                }
+                _ => None,
+            })
+            .collect::<Vec<_>>();
+        let staged = target_records
+            .iter()
+            .filter_map(|record| match record.move_state {
+                Some(MoveState::Staged {
+                    move_id,
+                    source_session_id: marker_source,
+                    original_revision,
+                }) if marker_source == source_session_id
+                    && record.revision == original_revision.saturating_add(1) =>
+                {
+                    Some((record.id, move_id, original_revision))
+                }
+                _ => None,
+            })
+            .collect::<Vec<_>>();
+
+        let mut staged_by_move = BTreeMap::new();
+        for entry @ (_, move_id, _) in staged {
+            if staged_by_move.insert(move_id, entry).is_some() {
+                return Err(move_conflict());
+            }
+        }
+
+        let mut recovered = 0usize;
+        let mut seen_pending = BTreeSet::new();
+        for (secret_id, move_id, original_revision) in pending {
+            if !seen_pending.insert(move_id) {
+                return Err(move_conflict());
+            }
+            match staged_by_move.remove(&move_id) {
+                Some((staged_id, _, staged_revision))
+                    if staged_id == secret_id && staged_revision == original_revision =>
+                {
+                    self.remove_source_after_staged(
+                        source_session_id,
+                        target_session_id,
+                        secret_id,
+                        move_id,
+                    )?;
+                    self.commit_destination(
+                        source_session_id,
+                        target_session_id,
+                        secret_id,
+                        move_id,
+                    )?;
+                }
+                Some(_) => return Err(move_conflict()),
+                None => {
+                    self.rollback_source(source_session_id, target_session_id, secret_id, move_id)?;
+                }
+            }
+            recovered += 1;
+        }
+
+        for (move_id, (secret_id, _, _)) in staged_by_move {
+            self.commit_destination(source_session_id, target_session_id, secret_id, move_id)?;
+            recovered += 1;
+        }
+
+        Ok(RecoveryResult { recovered })
+    }
+
     pub fn update(
         &self,
         session_id: Uuid,
@@ -360,6 +549,150 @@ where
         }
         Ok(now_ms)
     }
+
+    fn remove_source_after_staged(
+        &self,
+        source_session_id: Uuid,
+        target_session_id: Uuid,
+        secret_id: Uuid,
+        move_id: Uuid,
+    ) -> Result<(), SecretServiceError> {
+        self.access.write_two_authorized(
+            source_session_id,
+            target_session_id,
+            |mut source, target| {
+                let mut source_records = decode_records(source.content())?;
+                let target_records = decode_records(target.content())?;
+                let source_index = source_records
+                    .iter()
+                    .position(|record| {
+                        pending_matches(record, secret_id, move_id, target_session_id)
+                    })
+                    .ok_or(SecretError::MoveConflict)?;
+                if !target_records
+                    .iter()
+                    .any(|record| staged_matches(record, secret_id, move_id, source_session_id))
+                {
+                    return Err(SecretError::MoveConflict);
+                }
+                source_records.remove(source_index);
+                source.content_mut().secrets = encode_records(&source_records)?;
+                Ok(())
+            },
+        )?;
+        Ok(())
+    }
+
+    fn commit_destination(
+        &self,
+        source_session_id: Uuid,
+        target_session_id: Uuid,
+        secret_id: Uuid,
+        move_id: Uuid,
+    ) -> Result<u64, SecretServiceError> {
+        let committed = self.access.write_two_authorized(
+            source_session_id,
+            target_session_id,
+            |source, mut target| {
+                let source_records = decode_records(source.content())?;
+                if source_records.iter().any(|record| record.id == secret_id) {
+                    return Err(SecretError::MoveConflict);
+                }
+                let mut target_records = decode_records(target.content())?;
+                let record = target_records
+                    .iter_mut()
+                    .find(|record| staged_matches(record, secret_id, move_id, source_session_id))
+                    .ok_or(SecretError::MoveConflict)?;
+                commit_staged(record, move_id).map_err(map_move_error)?;
+                let revision = record.revision;
+                target.content_mut().secrets = encode_records(&target_records)?;
+                Ok(revision)
+            },
+        )?;
+        Ok(committed.value)
+    }
+
+    fn rollback_source(
+        &self,
+        source_session_id: Uuid,
+        target_session_id: Uuid,
+        secret_id: Uuid,
+        move_id: Uuid,
+    ) -> Result<(), SecretServiceError> {
+        self.access.write_two_authorized(
+            source_session_id,
+            target_session_id,
+            |mut source, target| {
+                let mut source_records = decode_records(source.content())?;
+                let target_records = decode_records(target.content())?;
+                if target_records
+                    .iter()
+                    .any(|record| staged_matches(record, secret_id, move_id, source_session_id))
+                {
+                    return Err(SecretError::MoveConflict);
+                }
+                let record = source_records
+                    .iter_mut()
+                    .find(|record| pending_matches(record, secret_id, move_id, target_session_id))
+                    .ok_or(SecretError::MoveConflict)?;
+                rollback_pending(record, move_id).map_err(map_move_error)?;
+                source.content_mut().secrets = encode_records(&source_records)?;
+                Ok(())
+            },
+        )?;
+        Ok(())
+    }
+}
+
+fn pending_matches(
+    record: &SecretRecordV1,
+    secret_id: Uuid,
+    move_id: Uuid,
+    target_session_id: Uuid,
+) -> bool {
+    record.id == secret_id
+        && matches!(
+            record.move_state,
+            Some(MoveState::PendingMove {
+                move_id: marker_move_id,
+                target_session_id: marker_target,
+                original_revision,
+            }) if marker_move_id == move_id
+                && marker_target == target_session_id
+                && original_revision == record.revision
+        )
+}
+
+fn staged_matches(
+    record: &SecretRecordV1,
+    secret_id: Uuid,
+    move_id: Uuid,
+    source_session_id: Uuid,
+) -> bool {
+    record.id == secret_id
+        && matches!(
+            record.move_state,
+            Some(MoveState::Staged {
+                move_id: marker_move_id,
+                source_session_id: marker_source,
+                original_revision,
+            }) if marker_move_id == move_id
+                && marker_source == source_session_id
+                && original_revision.checked_add(1) == Some(record.revision)
+        )
+}
+
+fn map_move_error(error: MoveStateError) -> SecretError {
+    match error {
+        MoveStateError::RevisionConflict => SecretError::RevisionConflict,
+        MoveStateError::MoveAlreadyPending => SecretError::MovePending,
+        MoveStateError::MarkerMismatch => SecretError::MoveConflict,
+        MoveStateError::SameSession | MoveStateError::RevisionOverflow => SecretError::InvalidInput,
+    }
+}
+
+fn move_conflict() -> SecretServiceError {
+    SecretServiceError::Access(SessionAccessError::Operation(SecretError::MoveConflict))
 }
 
 fn summary_subtitle(data: &SecretDataV1) -> Option<String> {

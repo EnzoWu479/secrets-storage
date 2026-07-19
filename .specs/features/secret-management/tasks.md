@@ -263,8 +263,9 @@ Fonte: [tasks-ui-flowchart.mmd](./tasks-ui-flowchart.mmd)
 
 ### T11 — Integrar move e recovery ao serviço
 
+**Status:** Done — 2026-07-19
 **What:** executar os quatro commits cifrados e recuperar movimentos quando ambas as sessões estiverem autorizadas.  
-**Where:** `src-tauri/src/secrets/service.rs`, `src-tauri/tests/secret_management.rs`  
+**Where:** `src-tauri/src/secrets/{service.rs,model.rs,session_access.rs}`, `src-tauri/tests/secret_management.rs`
 **Depends on:** T07, T10  
 **Reuses:** writer, codec, `write_two_authorized` e state machine  
 **Requirements:** SECMGMT-06, SECMGMT-12, SECMGMT-13  
@@ -272,10 +273,10 @@ Fonte: [tasks-ui-flowchart.mmd](./tasks-ui-flowchart.mmd)
 
 **Done when:**
 
-- [ ] RED injeta falha antes/depois de cada commit e reinicia o serviço.
-- [ ] Locks seguem UUID crescente e sucesso só ocorre após `Committed`.
-- [ ] Recovery é idempotente e não duplica registro visível.
-- [ ] Gate serial passa; contagem da suíte: anterior + no mínimo 12 integration tests.
+- [x] RED injeta falha nas quatro fronteiras e reinicia o serviço sobre markers persistidos.
+- [x] Locks seguem UUID crescente e sucesso só ocorre após `Committed`.
+- [x] Recovery é idempotente, fail-closed em conflito e não duplica registro visível.
+- [x] Gate serial passa; contagem: 45 integration tests, 20 novos para move/recovery.
 
 **Tests/Gate:** integração Rust serial; `cargo test --manifest-path src-tauri/Cargo.toml --test secret_management -- --test-threads=1`  
 **Verify:** comando acima + `pnpm check:rust`  

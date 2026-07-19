@@ -483,3 +483,355 @@ fn update_preserva_tipo_quando_patch_altera_somente_nome() {
     let confirmed = records(&access);
     assert!(matches!(confirmed[0].data, SecretDataV1::SshKey { .. }));
 }
+
+mod move_integration_tests {
+    use super::*;
+    use secrets_storage_lib::secrets::codec::encode_records;
+    use secrets_storage_lib::secrets::model::SecretRecordV1;
+    use secrets_storage_lib::secrets::move_state::{begin_move, staged_copy};
+    use secrets_storage_lib::secrets::service::MoveCompletion;
+
+    fn source_id() -> Uuid {
+        session_id()
+    }
+
+    fn target_id() -> Uuid {
+        Uuid::from_u128(0x300)
+    }
+
+    fn move_id() -> Uuid {
+        Uuid::from_u128(0x400)
+    }
+
+    fn move_service(
+        access: &FakeSessionAccess,
+    ) -> SecretService<'_, FakeSessionAccess, FixedClock, SequenceIds> {
+        SecretService::new(access, FixedClock, SequenceIds::from([move_id()]))
+    }
+
+    fn records_for(access: &FakeSessionAccess, session: Uuid) -> Vec<SecretRecordV1> {
+        let content = access.content(session).expect("sessão desbloqueada");
+        decode_records(&content).expect("payload válido")
+    }
+
+    fn install_records(access: &FakeSessionAccess, session: Uuid, records: &[SecretRecordV1]) {
+        access.install_unlocked(
+            session,
+            SessionContent {
+                content_format: 1,
+                secrets: encode_records(records).expect("records de fixture válidos"),
+            },
+        );
+    }
+
+    fn seed_source(access: &FakeSessionAccess, create: CreateSecretInput) {
+        access.install_unlocked(source_id(), empty_content());
+        access.install_unlocked(target_id(), empty_content());
+        service(access)
+            .create(source_id(), create)
+            .expect("segredo de origem criado");
+    }
+
+    fn visible_count(access: &FakeSessionAccess) -> usize {
+        [source_id(), target_id()]
+            .into_iter()
+            .filter_map(|session| access.content(session))
+            .flat_map(|content| decode_records(&content).expect("payload válido"))
+            .filter(SecretRecordV1::is_visible)
+            .count()
+    }
+
+    fn assert_committed_in_target(access: &FakeSessionAccess, kind: SecretKind) {
+        assert!(records_for(access, source_id()).is_empty());
+        let target = records_for(access, target_id());
+        assert_eq!(target.len(), 1);
+        assert_eq!(target[0].id, secret_id());
+        assert_eq!(target[0].kind(), kind);
+        assert_eq!(target[0].revision, 1);
+        assert!(target[0].move_state.is_none());
+        assert_eq!(visible_count(access), 1);
+    }
+
+    fn assert_move(create: CreateSecretInput, kind: SecretKind) {
+        let access = FakeSessionAccess::default();
+        seed_source(&access, create);
+
+        let result = move_service(&access)
+            .move_secret(source_id(), target_id(), secret_id(), 0)
+            .expect("movimentação confirmada");
+
+        assert_eq!(result.id, secret_id());
+        assert_eq!(result.revision, 1);
+        assert_eq!(result.state, MoveCompletion::Committed);
+        assert_committed_in_target(&access, kind);
+    }
+
+    fn pending_record(access: &FakeSessionAccess) -> SecretRecordV1 {
+        let mut source = records_for(access, source_id())
+            .into_iter()
+            .next()
+            .expect("origem contém segredo");
+        let revision = source.revision;
+        begin_move(&mut source, source_id(), target_id(), move_id(), revision)
+            .expect("marker pending válido");
+        source
+    }
+
+    fn recover_and_assert_single_visible(access: &FakeSessionAccess) {
+        move_service(access)
+            .recover_moves(source_id(), target_id())
+            .expect("recovery determinístico");
+        assert_eq!(visible_count(access), 1);
+        let all = [source_id(), target_id()]
+            .into_iter()
+            .flat_map(|session| records_for(access, session))
+            .collect::<Vec<_>>();
+        assert_eq!(all.iter().filter(|record| record.is_visible()).count(), 1);
+        assert_eq!(
+            all.iter()
+                .filter(|record| record.move_state.is_none())
+                .count(),
+            1
+        );
+    }
+
+    #[test]
+    fn move_password_preserva_tipo_e_confirma_destino() {
+        assert_move(password("Mover password"), SecretKind::Password);
+    }
+
+    #[test]
+    fn move_api_key_preserva_tipo_e_confirma_destino() {
+        assert_move(api_key("Mover api key"), SecretKind::ApiKey);
+    }
+
+    #[test]
+    fn move_token_preserva_tipo_e_confirma_destino() {
+        assert_move(token("Mover token"), SecretKind::Token);
+    }
+
+    #[test]
+    fn move_secure_note_preserva_tipo_e_confirma_destino() {
+        assert_move(secure_note("Mover nota"), SecretKind::SecureNote);
+    }
+
+    #[test]
+    fn move_ssh_key_preserva_tipo_e_confirma_destino() {
+        assert_move(ssh_key("Mover ssh"), SecretKind::SshKey);
+    }
+
+    #[test]
+    fn move_rejeita_source_igual_target_sem_alterar_estado() {
+        let access = FakeSessionAccess::default();
+        seed_source(&access, password("Original"));
+        let before = access.content(source_id()).unwrap();
+        let before_revision = access.revision(source_id());
+
+        let result = move_service(&access).move_secret(source_id(), source_id(), secret_id(), 0);
+
+        assert!(result.is_err());
+        assert_eq!(access.content(source_id()).unwrap(), before);
+        assert_eq!(access.revision(source_id()), before_revision);
+    }
+
+    #[test]
+    fn move_rejeita_revisao_obsoleta_sem_criar_copia() {
+        let access = FakeSessionAccess::default();
+        seed_source(&access, password("Original"));
+
+        let result = move_service(&access).move_secret(source_id(), target_id(), secret_id(), 9);
+
+        assert!(result.is_err());
+        assert_eq!(visible_count(&access), 1);
+        assert!(records_for(&access, target_id()).is_empty());
+        assert!(records_for(&access, source_id())[0].move_state.is_none());
+    }
+
+    #[test]
+    fn move_rejeita_source_bloqueada() {
+        let access = FakeSessionAccess::default();
+        seed_source(&access, password("Original"));
+        access.lock(source_id());
+
+        let result = move_service(&access).move_secret(source_id(), target_id(), secret_id(), 0);
+
+        assert!(result.is_err());
+        assert!(records_for(&access, target_id()).is_empty());
+    }
+
+    #[test]
+    fn move_rejeita_target_bloqueada_e_preserva_source() {
+        let access = FakeSessionAccess::default();
+        seed_source(&access, password("Original"));
+        access.lock(target_id());
+
+        let result = move_service(&access).move_secret(source_id(), target_id(), secret_id(), 0);
+
+        assert!(result.is_err());
+        assert_eq!(records_for(&access, source_id()).len(), 1);
+    }
+
+    #[test]
+    fn move_descarta_operacao_quando_epoch_muda() {
+        let access = FakeSessionAccess::default();
+        seed_source(&access, password("Original"));
+        access.invalidate_before_next_commit(target_id());
+
+        let result = move_service(&access).move_secret(source_id(), target_id(), secret_id(), 0);
+
+        assert!(result.is_err());
+        assert!(records_for(&access, source_id())
+            .iter()
+            .any(SecretRecordV1::is_visible));
+    }
+
+    #[test]
+    fn move_adquire_sessoes_em_ordem_crescente_de_uuid() {
+        let access = FakeSessionAccess::default();
+        let low = Uuid::from_u128(1);
+        let high = Uuid::from_u128(2);
+        access.install_unlocked(high, empty_content());
+        access.install_unlocked(low, empty_content());
+        let service = SecretService::new(
+            &access,
+            FixedClock,
+            SequenceIds::from([secret_id(), move_id()]),
+        );
+        service
+            .create(high, password("Original"))
+            .expect("segredo criado");
+
+        service
+            .move_secret(high, low, secret_id(), 0)
+            .expect("movimentação confirmada");
+
+        assert_eq!(access.last_lock_order(), vec![low, high]);
+    }
+
+    #[test]
+    fn sucesso_so_retorna_depois_do_quarto_commit_committed() {
+        let access = FakeSessionAccess::default();
+        seed_source(&access, password("Original"));
+
+        let result = move_service(&access)
+            .move_secret(source_id(), target_id(), secret_id(), 0)
+            .expect("movimentação confirmada");
+
+        assert_eq!(result.state, MoveCompletion::Committed);
+        assert_committed_in_target(&access, SecretKind::Password);
+    }
+
+    #[test]
+    fn falha_antes_da_fronteira_1_preserva_origem_e_recovery_e_idempotente() {
+        assert_failure_boundary_recovers(1);
+    }
+
+    #[test]
+    fn falha_antes_da_fronteira_2_preserva_pending_e_recovery_e_idempotente() {
+        assert_failure_boundary_recovers(2);
+    }
+
+    #[test]
+    fn falha_antes_da_fronteira_3_preserva_pending_staged_e_recovery_e_idempotente() {
+        assert_failure_boundary_recovers(3);
+    }
+
+    #[test]
+    fn falha_antes_da_fronteira_4_preserva_staged_e_recovery_e_idempotente() {
+        assert_failure_boundary_recovers(4);
+    }
+
+    fn assert_failure_boundary_recovers(boundary: usize) {
+        let access = FakeSessionAccess::default();
+        seed_source(&access, password("Original"));
+        access.fail_before_commit_number(boundary);
+
+        let result = move_service(&access).move_secret(source_id(), target_id(), secret_id(), 0);
+
+        assert!(result.is_err());
+        move_service(&access)
+            .recover_moves(source_id(), target_id())
+            .expect("primeiro recovery");
+        let after_first = (
+            access.content(source_id()).unwrap(),
+            access.content(target_id()).unwrap(),
+        );
+        move_service(&access)
+            .recover_moves(source_id(), target_id())
+            .expect("segundo recovery idempotente");
+        assert_eq!(access.content(source_id()).unwrap(), after_first.0);
+        assert_eq!(access.content(target_id()).unwrap(), after_first.1);
+        assert_eq!(visible_count(&access), 1);
+    }
+
+    #[test]
+    fn restart_recovery_pending_only_reverte_para_source_visivel() {
+        let access = FakeSessionAccess::default();
+        seed_source(&access, password("Original"));
+        let pending = pending_record(&access);
+        install_records(&access, source_id(), &[pending]);
+
+        recover_and_assert_single_visible(&access);
+
+        assert_eq!(records_for(&access, source_id()).len(), 1);
+        assert!(records_for(&access, target_id()).is_empty());
+    }
+
+    #[test]
+    fn restart_recovery_pending_e_staged_completa_no_target() {
+        let access = FakeSessionAccess::default();
+        seed_source(&access, password("Original"));
+        let pending = pending_record(&access);
+        let staged = staged_copy(&pending, source_id()).expect("staged válido");
+        install_records(&access, source_id(), &[pending]);
+        install_records(&access, target_id(), &[staged]);
+
+        recover_and_assert_single_visible(&access);
+
+        assert!(records_for(&access, source_id()).is_empty());
+        assert_committed_in_target(&access, SecretKind::Password);
+    }
+
+    #[test]
+    fn restart_recovery_staged_only_confirma_target() {
+        let access = FakeSessionAccess::default();
+        seed_source(&access, password("Original"));
+        let pending = pending_record(&access);
+        let staged = staged_copy(&pending, source_id()).expect("staged válido");
+        install_records(&access, source_id(), &[]);
+        install_records(&access, target_id(), &[staged]);
+
+        recover_and_assert_single_visible(&access);
+
+        assert!(records_for(&access, source_id()).is_empty());
+        assert_committed_in_target(&access, SecretKind::Password);
+    }
+
+    #[test]
+    fn recovery_nao_promove_staged_se_origem_normal_ainda_existe() {
+        let access = FakeSessionAccess::default();
+        seed_source(&access, password("Original"));
+        let original = records_for(&access, source_id())
+            .into_iter()
+            .next()
+            .expect("origem");
+        let mut pending = original.clone();
+        begin_move(
+            &mut pending,
+            source_id(),
+            target_id(),
+            move_id(),
+            original.revision,
+        )
+        .expect("pending");
+        let staged = staged_copy(&pending, source_id()).expect("staged");
+        install_records(&access, source_id(), &[original]);
+        install_records(&access, target_id(), &[staged]);
+
+        let result = move_service(&access).recover_moves(source_id(), target_id());
+
+        assert!(result.is_err());
+        assert_eq!(visible_count(&access), 1);
+        assert!(records_for(&access, target_id())[0].move_state.is_some());
+    }
+}

@@ -37,6 +37,10 @@ pub enum SecretError {
     CapacityExceeded,
     #[error("identificador de segredo já existe")]
     IdCollision,
+    #[error("segredo já participa de uma movimentação")]
+    MovePending,
+    #[error("estado de movimentação está em conflito")]
+    MoveConflict,
 }
 
 pub struct SecretText(Zeroizing<String>);
