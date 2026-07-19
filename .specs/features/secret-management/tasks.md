@@ -116,6 +116,7 @@ Fonte: [tasks-ui-flowchart.mmd](./tasks-ui-flowchart.mmd)
 
 ### T04 — Implementar o codec CBOR fechado [P]
 
+**Status:** Done — 2026-07-19
 **What:** converter records v1 validados de/para `SessionContent.secrets` sem aceitar versões, tipos ou campos desconhecidos.  
 **Where:** `src-tauri/src/secrets/codec.rs`  
 **Depends on:** T03  
@@ -125,10 +126,10 @@ Fonte: [tasks-ui-flowchart.mmd](./tasks-ui-flowchart.mmd)
 
 **Done when:**
 
-- [ ] RED cobre round-trip dos cinco tipos e falha fechada para payload futuro/malformado.
-- [ ] Decode inválido não altera o `SessionContent` original.
-- [ ] Registro serializado acima de 2 MiB é rejeitado.
-- [ ] Gate passa; contagem: baseline + no mínimo 8 unit tests.
+- [x] RED cobre round-trip dos cinco tipos e falha fechada para payload futuro/malformado.
+- [x] Decode inválido não altera o `SessionContent` original.
+- [x] Registro serializado acima de 2 MiB é rejeitado.
+- [x] Gate passa; contagem: 106 testes Rust, incluindo 13 novos unit tests.
 
 **Tests/Gate:** unitário Rust; `pnpm test:rust`  
 **Verify:** `pnpm check:rust`  
