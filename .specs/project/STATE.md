@@ -1,7 +1,7 @@
 # State
 
 **Last Updated:** 2026-07-19
-**Current Work:** A feature M0 `windows-tauri-proof` foi **pausada após T14** por decisão do usuário. T01–T14 estão implementadas; T15–T22 permanecem documentadas e pendentes, sem alegação de conclusão. O próximo trabalho será escolhido em uma nova spec. O `crypto-format` segue candidato e bloqueado pela revisão independente/D-05; o app frontend-only permanece placeholder inseguro.
+**Current Work:** M1 `secret-management` com **Spec e Design aprovados** em 2026-07-19; próxima fase: Tasks. O Design cobre 15/15 requisitos com modelo tipado, comandos estreitos, persistência cifrada atômica, reveal efêmero, busca sem índice, move crash-safe e clipboard core-only. A execução depende de sessões locais persistentes/criptografadas e não pode promover o store frontend-only a fonte de verdade. O modelo de ameaças segue em revisão por AD-022; `windows-tauri-proof` está pausada após T14.
 
 ---
 

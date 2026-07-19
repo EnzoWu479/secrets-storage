@@ -2,7 +2,9 @@
 
 **Gathered:** 2026-07-13
 **Spec:** `.specs/features/secure-vault/spec.md`
-**Status:** Threat model approved; foundation implementation started
+**Status:** Spec canônica; modelo de ameaças em revisão por AD-022; reaprovação humana pendente
+
+> As decisões D-01…D-05 de [ui-screens/context.md](../ui-screens/context.md) substituem as premissas antigas de senha obrigatoriamente independente por sessão. A GMP abre sessões `global`; sessões `own` mantêm senha e isolamento próprios.
 
 ---
 
@@ -28,25 +30,25 @@ O v1 entrega um aplicativo Windows local-first e zero-knowledge para múltiplas 
 - O usuário pode criar múltiplas sessões de segurança para separar dados por contexto e atribuir um nome visível a cada uma, como “Trabalho”, “Pessoal” ou um projeto específico.
 - Nomes de sessões são únicos sem diferenciar maiúsculas de minúsculas; por exemplo, “Trabalho” e “trabalho” entram em conflito.
 - O usuário pode renomear uma sessão somente enquanto ela estiver desbloqueada.
-- Cada sessão tem sua própria senha mestra, estado de bloqueio e política configurável de bloqueio automático.
+- Cada sessão possui `auth_mode`: `global` por padrão, protegida pelo domínio da GMP, ou `own`, protegida por senha própria; toda sessão mantém estado e política de bloqueio configuráveis.
 - O temporizador conta a inatividade desde o desbloqueio ou desde a última interação intencional dentro daquela sessão.
 - Atividade em uma sessão reinicia somente o cronômetro dela, sem afetar outras sessões desbloqueadas.
 - A política usa 15 minutos por padrão e é selecionada em um controle contínuo de 1 minuto até a opção “nunca”; escolher “nunca” exige confirmação explícita de que a sessão não terá bloqueio automático.
 - Enquanto o aplicativo está minimizado, o tempo continua contando como inatividade.
 - Novas sessões vêm configuradas para bloquear tanto ao bloquear quanto ao suspender o Windows; cada uma dessas reações pode ser desativada individualmente por sessão.
 - Fechar o aplicativo bloqueia todas as sessões.
-- Uma sessão desbloqueada não concede acesso a outra sessão bloqueada; a senha mestra da sessão bloqueada continua obrigatória.
+- Desbloquear a GMP abre conjuntamente as sessões `global`; isso não concede acesso às sessões `own`, que continuam exigindo sua senha própria.
 - Nomes e quantidade de sessões permanecem visíveis quando elas estão bloqueadas.
-- Excluir uma sessão exige confirmação e a senha mestra da própria sessão.
+- Excluir uma sessão exige confirmação e a credencial atual apropriada ao seu `auth_mode`.
 
 ### Senha mestra e tentativas
 
-- A criação e a troca da senha mestra exigem comprimento mínimo e exibem um indicador de força.
+- A criação e a troca da GMP ou de uma senha própria exigem comprimento mínimo e exibem um indicador de força.
 - Tentativas incorretas geram atraso progressivo.
-- A sessão pode ter uma dica de senha sincronizada entre dispositivos como metadado não secreto para a aplicação.
+- Uma sessão `own` pode ter dica de senha sincronizada entre dispositivos como metadado não secreto para a aplicação.
 - Na tela bloqueada, a dica aparece somente após o usuário clicar em “Mostrar dica”.
 - Antes de salvar a dica, o aplicativo avisa que ela pode ser vista sem senha e não deve conter a senha mestra nem partes óbvias dela.
-- Trocar a senha exige a senha atual.
+- Trocar a GMP ou uma senha própria exige a credencial atual correspondente.
 - O aplicativo avisa periodicamente que o v1 não oferece recuperação de acesso.
 - Um futuro fluxo “Esqueci minha senha” precisa de mecanismo próprio e continua fora do v1.
 
@@ -80,7 +82,7 @@ O v1 entrega um aplicativo Windows local-first e zero-knowledge para múltiplas 
 ### Recuperação
 
 - O kit de recuperação foi retirado do v1 sem mecanismo substituto por enquanto.
-- A experiência deve avisar que perder a senha mestra implica perder o acesso à sessão correspondente.
+- A experiência deve avisar que perder a GMP implica perder acesso às sessões `global` e que perder uma senha própria implica perder acesso à sessão `own` correspondente.
 
 ### Agent's Discretion
 

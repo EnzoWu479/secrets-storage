@@ -191,9 +191,9 @@ Usuários mantêm senhas e segredos técnicos dispersos em arquivos, notas, nave
 | VAULT-03 | Isolamento e políticas independentes entre sessões | Design | In Design | [local-sessions](../local-sessions/design.md), [crypto-format](../crypto-format/design.md) (KEY-01) |
 | VAULT-04 | Política de senha mestra, dicas e tentativas | Design | In Design | [local-sessions](../local-sessions/design.md), [crypto-format](../crypto-format/design.md) (ROT-01) |
 | VAULT-05 | Senha mestra global e modo de autenticação por sessão (global/própria) | Design | In Design | [local-sessions](../local-sessions/design.md) (GMP/`auth_mode`), [crypto-format](../crypto-format/design.md) (GKEY-01/02) |
-| SECRET-01 | Tipos e CRUD de segredos | Design | Pending | — |
-| SECRET-02 | Clipboard e exposição transitória | Design | Pending | — |
-| SECRET-03 | Pesquisa e movimentação entre sessões | Design | Pending | — |
+| SECRET-01 | Tipos e CRUD de segredos | Design | In Design | [secret-management](../secret-management/design.md) |
+| SECRET-02 | Clipboard e exposição transitória | Design | In Design | [secret-management](../secret-management/design.md) |
+| SECRET-03 | Pesquisa e movimentação entre sessões | Design | In Design | [secret-management](../secret-management/design.md) |
 | SYNC-01 | OAuth com escopo mínimo | Design | Pending | — |
 | SYNC-02 | Conteúdo remoto zero-knowledge | Design | Pending | [crypto-format](../crypto-format/spec.md) (INTEG-01, campos reservados; sync adiada) |
 | SYNC-03 | Offline, conflitos e integridade | Design | Pending | — |
@@ -209,7 +209,7 @@ Usuários mantêm senhas e segredos técnicos dispersos em arquivos, notas, nave
 
 **Status values:** Pending → In Design → In Tasks → Implementing → Verified. `Em revisão` = artefato existia como aprovado e foi reaberto por decisão posterior (AD-022), aguardando nova aprovação humana antes de voltar a ser base estável.
 
-**Coverage:** 20 requisitos — 5 em design (VAULT-01…05, cobertos por [local-sessions](../local-sessions/design.md) + [crypto-format](../crypto-format/design.md), ambos `Draft`), 2 em revisão (SEC-01, SEC-03, por [threat-model](./threat-model.md) reaberto em AD-022), 13 pendentes; **0 mapeados para tarefas funcionais**. O mockup visual [ui-screens](../ui-screens/tasks.md) (`Done`) cobre a *superfície de tela* de VAULT/SECRET/SYNC/UPDATE, porém sem lógica, criptografia ou persistência — não conta como implementação de nenhum requisito funcional acima.
+**Coverage:** 20 requisitos — 8 em design (VAULT-01…05, cobertos por [local-sessions](../local-sessions/design.md) + [crypto-format](../crypto-format/design.md), e SECRET-01…03, cobertos por [secret-management](../secret-management/design.md)), 2 em revisão (SEC-01, SEC-03, por [threat-model](./threat-model.md) reaberto em AD-022) e 10 pendentes; **0 mapeados para tarefas funcionais**. O mockup visual [ui-screens](../ui-screens/tasks.md) (`Done`) cobre a *superfície de tela* de VAULT/SECRET/SYNC/UPDATE, porém sem lógica, criptografia ou persistência — não conta como implementação de nenhum requisito funcional acima.
 
 ---
 

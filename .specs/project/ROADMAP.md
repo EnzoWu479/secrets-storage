@@ -12,7 +12,7 @@
 
 ### Features
 
-**Modelo de ameaças e requisitos de segurança** — COMPLETE (reaberto em revisão por AD-022)
+**Modelo de ameaças e requisitos de segurança** — REVIEWING (reaberto por AD-022)
 
 - Definir ativos, fronteiras de confiança, adversários e ataques previstos.
 - Cobrir memória, disco, logs, clipboard, arquivos temporários, IPC, interface, cadeia de atualização, OAuth e sincronização.
@@ -52,7 +52,7 @@
 - Exibir periodicamente que não existe recuperação de senha no v1.
 - Evitar persistência acidental de material sensível.
 
-**Gerenciamento de segredos** — PLANNED
+**Gerenciamento de segredos** — DESIGNED
 
 - Armazenar senhas, API keys, tokens, notas secretas e chaves SSH.
 - Pesquisar simultaneamente nas sessões desbloqueadas e exigir origem e destino desbloqueados para mover registros entre sessões.
