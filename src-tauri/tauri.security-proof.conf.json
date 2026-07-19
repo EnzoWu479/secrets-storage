@@ -1,5 +1,11 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
+  "build": {
+    "beforeDevCommand": "vite --config e2e/security-proof/vite.config.ts",
+    "devUrl": "http://localhost:1422",
+    "beforeBuildCommand": "vue-tsc --noEmit && vite build --config e2e/security-proof/vite.config.ts",
+    "frontendDist": "../dist/security-proof"
+  },
   "app": {
     "windows": [
       {
