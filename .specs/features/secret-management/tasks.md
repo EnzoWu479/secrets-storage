@@ -280,6 +280,7 @@ Fonte: [tasks-ui-flowchart.mmd](./tasks-ui-flowchart.mmd)
 
 ### T12 — Implementar o domínio do clipboard [P]
 
+**Status:** Done — 2026-07-19
 **What:** definir `ClipboardPort`, presets, ownership por sequence/deadline e coordenação de timeout/lock/clear-now.  
 **Where:** `src-tauri/src/secrets/clipboard.rs`  
 **Depends on:** T03  
@@ -289,10 +290,10 @@ Fonte: [tasks-ui-flowchart.mmd](./tasks-ui-flowchart.mmd)
 
 **Done when:**
 
-- [ ] RED cobre default 5 min, todos os presets, timeout, lock, clear-now e conteúdo posterior.
-- [ ] Estado durável guarda somente sessão, sequence e deadline.
-- [ ] Resultados distinguem cleared, not-owned e inconclusive.
-- [ ] Gate passa; contagem: baseline + no mínimo 10 unit tests.
+- [x] RED cobre default 5 min, todos os presets, timeout, lock, clear-now e conteúdo posterior.
+- [x] Estado de ownership guarda somente sessão, sequence e deadline.
+- [x] Resultados distinguem cleared, not-owned e inconclusive.
+- [x] Gate passa; contagem: 11 novos unit tests, 138 no total.
 
 **Tests/Gate:** unitário Rust; `pnpm test:rust`  
 **Verify:** `pnpm check:rust`  
