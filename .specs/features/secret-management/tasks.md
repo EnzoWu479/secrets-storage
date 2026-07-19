@@ -54,6 +54,7 @@ Fonte: [tasks-ui-flowchart.mmd](./tasks-ui-flowchart.mmd)
 
 ### T01 — Registrar o contrato de testes da feature
 
+**Status:** Done — 2026-07-19
 **What:** adicionar à matriz de testes os seis layers e comandos contratuais desta feature.  
 **Where:** `.specs/codebase/TESTING.md`  
 **Depends on:** nenhum  
@@ -63,10 +64,10 @@ Fonte: [tasks-ui-flowchart.mmd](./tasks-ui-flowchart.mmd)
 
 **Done when:**
 
-- [ ] Matriz inclui Rust puro, integração de vault, plataforma Windows, IPC, frontend e E2E.
-- [ ] Suítes Windows/Tauri/E2E estão marcadas como seriais.
-- [ ] Comandos futuros estão identificados como indisponíveis até suas tarefas introdutoras.
-- [ ] `git diff --check` passa; contagem de testes: N/A, nenhuma suíte alterada.
+- [x] Matriz inclui Rust puro, integração de vault, plataforma Windows, IPC, frontend e E2E.
+- [x] Suítes Windows/Tauri/E2E estão marcadas como seriais.
+- [x] Comandos futuros estão identificados como indisponíveis até suas tarefas introdutoras.
+- [x] `git diff --check` passa; contagem de testes: N/A, nenhuma suíte alterada.
 
 **Tests/Gate:** documentação; `git diff --check`  
 **Verify:** `rg -n "secret_management|windows_secret_platform|test:e2e:secret-management" .specs/codebase/TESTING.md`  
