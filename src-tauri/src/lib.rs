@@ -4,6 +4,7 @@ pub mod platform;
 pub mod proof;
 pub mod secrets;
 pub mod security;
+pub mod sessions;
 pub mod storage;
 
 use std::any::Any;
