@@ -1,8 +1,10 @@
 # Sessões de Segurança e Desbloqueio — Design
 
-**Spec (requisitos):** [secure-vault/spec.md](../secure-vault/spec.md) — histórias "Criar e desbloquear sessões" (VAULT-01…03), "Proteger a senha mestra" (VAULT-04) e "Senha mestra global e `auth_mode`" (VAULT-05 — GMP, keyring global, desbloqueio conjunto das sessões `global`)
-**Formato criptográfico:** [crypto-format/design.md](../crypto-format/design.md)
-**Status:** Draft
+**Spec da feature:** [spec.md](./spec.md) — requisitos `SESSION-01…25`
+**Spec-fonte (requisitos):** [secure-vault/spec.md](../secure-vault/spec.md) — histórias "Criar e desbloquear sessões" (VAULT-01…03), "Proteger a senha mestra" (VAULT-04) e "Senha mestra global e `auth_mode`" (VAULT-05 — GMP, keyring global, desbloqueio conjunto das sessões `global`)
+**Formato criptográfico:** [crypto-format/design.md](../crypto-format/design.md) — **implementado** (`crypto::{aead,kdf,keys,keyring,envelope,codec}`)
+**Modelo de ameaças:** [secure-vault/threat-model.md](../secure-vault/threat-model.md) — re-aprovado em 2026-07-21 (AD-022/GMP, D-05 fechado)
+**Status:** Approved — 2026-07-21
 **Fatia:** primeira vertical de M1 — ciclo de vida de sessões locais + senha mestra. **Sem** CRUD de segredos, sync, OAuth ou update.
 
 ---
@@ -196,4 +198,69 @@ O controle de `auth_mode` (global padrão / própria opt-out) aparece no create 
 | Payload vazio | `secrets: []` já cifrado | Exercita o formato completo; fatia de segredos só preenche |
 | GMP como gate + wrap por `auth_mode` | Gate global desbloqueia as `global`; `own` mantém senha própria | Conveniência de senha única com opt-out de isolamento (context.md D-04) |
 | Keyring global separado do registry | `keyring.vault` distinto do `registry.json` | Registry legível bloqueado (metadados); material da GMK isolado no envelope (C-02, D-04) |
-| Raio de exposição da GMP | Aceito conscientemente | Comprometer a GMP expõe **todas** as globais; sessões `own` permanecem isoladas. Contradiz "sem desbloqueio transitivo" e **reabre o modelo de ameaças** — exige nova aprovação (context.md D-04/D-05) |
+| Raio de exposição da GMP | Aceito conscientemente | Comprometer a GMP expõe **todas** as globais; sessões `own` permanecem isoladas. Contradiz "sem desbloqueio transitivo" e reabriu o modelo de ameaças — **re-aprovado em 2026-07-21, D-05 fechado** (context.md D-04/D-05, AD-030) |
+
+---
+
+## Reuso concreto do `crypto::*` (já implementado)
+
+O `SessionManager` **orquestra** primitivas existentes; não reimplementa criptografia. APIs disponíveis (verificadas em `src-tauri/src/crypto/`):
+
+| Operação | API a reusar |
+| --- | --- |
+| Criar keyring da GMP (1º uso) | `crypto::keyring::create_keyring(...) -> KeyringEnvelope` |
+| Desbloquear GMK | `crypto::keyring::unwrap_gmk(gmp, &env) -> Key32` |
+| Trocar a GMP (re-wrap da mesma GMK) | `crypto::keyring::change_gmp(...)` |
+| Derivar KEK de senha (própria) | `crypto::kdf::derive_kek(pwd, salt, params)` + `KdfParams::validate` |
+| Gerar/derivar chaves de sessão | `crypto::keys::{generate_root_key, derive_content_key, derive_session_wrap_key}` |
+| Criar/abrir/reenrolar cofre | `crypto::envelope::{create_vault, unlock, rewrap}` com `UnlockAuth`/`WrapAuth`, retornando `UnlockedVault` |
+| Cofre e conteúdo | `crypto::envelope::{VaultEnvelope, Header, SessionContent, VaultNonces}` |
+| Serialização CBOR | `crypto::codec::{to_cbor, from_cbor}` |
+| Gravação atômica no disco | `storage::atomic_vault::AtomicVaultWriter` (já implementado em T06/T13 de secret-management) |
+
+`Key32` (`crypto::secret`) já é `Zeroizing`-friendly; a `AppLock`/`UnlockedSession` guardam apenas `Key32`.
+
+---
+
+## Contrato de integração — o gate G1 de `secret-management`
+
+O objetivo desta fatia é substituir o fake `SessionAccess` por uma implementação de produção. O trait **pertence ao consumidor** (`secret-management`), configurando uma inversão de dependência clássica (porta e adaptador):
+
+- **Porta (já existe):** `crate::secrets::session_access::SessionAccess`, com `read_authorized`, `read_all_authorized`, `write_authorized`, `write_two_authorized`, operando sobre `SessionRead`/`SessionWrite` (que expõem `&SessionContent`, `epoch: u64`, `revision: u64`) e retornando `SessionAccessError` (`Locked`, `StaleAuthorization`, …).
+- **Adaptador (esta fatia):** o `SessionManager` implementa `SessionAccess`. Diferente do fake (em memória), no `write_*` ele **persiste o envelope cifrado** via `crypto::envelope::rewrap` + `AtomicVaultWriter` **dentro da mesma linearização** em que avança `epoch`/`revision`, e revalida o estado desbloqueado + epoch antes de confirmar.
+- **Ordem de lock:** duas sessões (`write_two_authorized`) travam por UUID crescente, igual ao contrato provado pelo fake.
+- **Evidência de liberação do G1:** a suíte `cargo test --test secret_management` (serial) passa com o `SessionManager` real no lugar de `FakeSessionAccess`; deny de commit após lock/epoch preservado; canário ausente em logs/temporários.
+
+> Nota de fronteira: o trait continua morando em `secrets::session_access` (o consumidor define a porta). O `SessionManager` vive em `sessions/` e depende de `secrets` apenas para o trait — nenhuma dependência reversa de `secrets` para `sessions`.
+
+---
+
+## Requirement Traceability (SESSION-*)
+
+| Requisito | Componentes / comandos principais |
+| --- | --- |
+| SESSION-01 | `create_global_password`, `keyring.vault`, `crypto::keyring::create_keyring` |
+| SESSION-02 | `unlock_app`, `crypto::keyring::unwrap_gmk`, abertura das sessões `global` (D-03) |
+| SESSION-03 | erros genéricos de `unlock_app`/`unlock_session`, `AttemptState` |
+| SESSION-04 | `change_global_password`, `crypto::keyring::change_gmp` |
+| SESSION-05 | `create_session`, `crypto::envelope::create_vault`, payload `secrets: []` |
+| SESSION-06 | `name_normalized` no `registry.json`, validação de unicidade |
+| SESSION-07 | `list_sessions` (funciona bloqueado) |
+| SESSION-08 | `rename_session` (exige desbloqueada) |
+| SESSION-09 | `delete_session` (senha da sessão) |
+| SESSION-10 | `unlock_session` (apenas `own`), `crypto::envelope::unlock` |
+| SESSION-11 | `lock_session`, `lock_all`, zeroização de `UnlockedSession` |
+| SESSION-12 | `set_session_auth_mode`, `crypto::envelope::rewrap` |
+| SESSION-13 | `auth_mode` na AAD do header (`create_vault`/`unlock` autenticam) |
+| SESSION-14 | `set_lock_policy`, `lock_app`, hook de exit, timer `tokio` |
+| SESSION-15 | `touch_session`, `last_activity` por `UnlockedSession` |
+| SESSION-16 | eventos Windows lock/suspend (best-effort) → `SessionManager` |
+| SESSION-17 | `passwordStrength.ts` + mínimo imposto no core |
+| SESSION-18 | `AttemptState` (backoff), aplicado à GMP e às sessões `own` |
+| SESSION-19 | `reveal_hint`, `hint` no registry |
+| SESSION-20 | avisos no frontend (create/edição da dica) |
+| SESSION-21 | `change_master_password`, `change_global_password` |
+| SESSION-22 | avisos de não-recuperação (create + periódico) |
+| SESSION-23 | `impl SessionAccess for SessionManager` (read/write/two) |
+| SESSION-24 | revalidação por comando no core (C-10) |
+| SESSION-25 | redaction/allowlist de erros, sem canário em logs/temp (C-15) |
