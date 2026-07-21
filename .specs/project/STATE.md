@@ -1,7 +1,7 @@
 # State
 
 **Last Updated:** 2026-07-21
-**Current Work:** M1 `secret-management` com **core Rust completo** — T01–T13 concluídas e commitadas na branch `feat/secret-crud` (última: T11, `1786f0f`). A próxima tarefa T14 (comandos/DTOs Tauri) está bloqueada pelo **gate externo G1**, que exige o `SessionManager` real de `local-sessions`. Em 2026-07-21 o **modelo de ameaças foi re-aprovado (AD-030, gate D-05 fechado)**, destravando a formalização de `local-sessions` (hoje só `design.md` em Draft; faltam `spec.md` e `tasks.md`). Próximo passo acordado: iniciar `local-sessions` para entregar G1. O store frontend-only não pode virar fonte de verdade; `windows-tauri-proof` segue pausada após T14 (AD-029).
+**Current Work:** M1 `local-sessions` com **Spec, Design e 24 Tasks aprovados** em 2026-07-21 (`SESSION-01…25`). Executando em TDD a partir de L01 na branch `feat/secret-crud`. A fatia entrega o `SessionManager` real que, em L15, substitui o `FakeSessionAccess` e fornece a evidência de liberação do **gate externo G1** de `secret-management` (cujo core T01–T13 já está completo; T14+ bloqueado até G1). O modelo de ameaças foi re-aprovado (AD-030, D-05 fechado). O store frontend placeholder (SHA-256/localStorage) será removido em L22; `windows-tauri-proof` segue pausada após T14 (AD-029).
 
 ---
 
