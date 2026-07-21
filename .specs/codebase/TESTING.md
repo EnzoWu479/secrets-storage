@@ -49,6 +49,13 @@ Em 2026-07-17, `pnpm --version` não concluiu dentro de 10 segundos. Nenhuma ins
 | Configuração efetiva da prova | integração PowerShell | `scripts/security/tests/assert-effective-config.tests.ps1` | `pwsh -NoProfile -File scripts/security/tests/assert-effective-config.tests.ps1` | Serial; T11 |
 | Authority e XSS da WebView | E2E Tauri WebDriver | `e2e/security-proof/**/*.e2e.ts` e `e2e/security-proof/wdio.*` | `pnpm test:e2e:security-proof` | Serial; introduzido por T14 (comando indisponível até então) |
 | Jornada de gerenciamento de segredos | E2E Tauri WebDriver | `e2e/secret-management/**/*.e2e.ts` | `pnpm test:e2e:secret-management` | Serial; introduzido por T23 (comando indisponível até então) |
+| Domínio Rust puro de sessões locais | unitário | `src-tauri/src/sessions/**/*.rs` | `pnpm test:rust` | Paralelo seguro; usa a suíte Rust existente |
+| Serviço/manager de sessões com vault e registry temporários | integração Rust | `src-tauri/tests/local_sessions.rs` | `cargo test --manifest-path src-tauri/Cargo.toml --test local_sessions -- --test-threads=1` | Serial; introduzido por L06 (comando indisponível até então) |
+| Eventos Windows de bloqueio/suspensão de sessões | integração Windows | `src-tauri/tests/windows_sessions.rs` | `cargo test --manifest-path src-tauri/Cargo.toml --test windows_sessions -- --test-threads=1` | Serial; introduzido por L12 (comando indisponível até então) |
+| Comandos e authority de sessões | integração IPC | `src-tauri/tests/local_sessions_commands.rs` | `cargo test --manifest-path src-tauri/Cargo.toml --test local_sessions_commands -- --test-threads=1` | Serial; introduzido por L13 (comando indisponível até então) |
+| API e componentes de sessões Vue | unitário frontend | `src/sessions/**/*.test.ts` | `pnpm test:frontend` | Paralelo seguro; usa a suíte frontend existente |
+| Jornada de sessões locais | E2E Tauri WebDriver | `e2e/local-sessions/**/*.e2e.ts` | `pnpm test:e2e:local-sessions` | Serial; introduzido por L23 (comando indisponível até então) |
+| Integração de sessões com segredos (destrava G1) | integração Rust | `src-tauri/tests/secret_management.rs` | `cargo test --manifest-path src-tauri/Cargo.toml --test secret_management -- --test-threads=1` | Serial; reusa a suíte existente com o `SessionManager` real em L15 |
 | Scanner de release | integração PowerShell | `scripts/security/tests/scan-release.tests.ps1`, `scripts/security/fixtures/` | `pwsh -NoProfile -File scripts/security/tests/scan-release.tests.ps1` | Paralelo seguro somente com diretório temporário exclusivo por execução; T16 |
 | Orquestrador de evidências | integração PowerShell | `scripts/security/tests/run-windows-proof.tests.ps1`, `scripts/security/fixtures/proof-results/` | `pwsh -NoProfile -File scripts/security/tests/run-windows-proof.tests.ps1` | Serial; T18 |
 | Laboratório Windows | UAT/laboratório manual | `.specs/features/windows-tauri-proof/lab-protocol.md` | Sem comando não assistido; seguir o protocolo aprovado | Serial e exige autorização do usuário para ações administrativas; T20/T21 |
@@ -83,6 +90,7 @@ O segundo comando fica disponível quando T02 adicionar `security-proof`. Até e
 - Smoke de build Tauri existente: `pnpm build --no-bundle`
 - Compile smokes da prova: os dois comandos Cargo exatos em [Compile Smokes](#compile-smokes)
 - Gate agregado futuro: `pnpm test:security-proof` (introduzido por T19; indisponível até que essa tarefa adicione o script)
+- E2E de sessões locais: `pnpm test:e2e:local-sessions` (introduzido por L23; indisponível até que essa tarefa adicione o script)
 - Release Windows: tag `vX.Y.Z` em commit da `main`; o workflow cria somente um draft.
 
 Os comandos introduzidos por T11, T14, T16, T18 e T19 são nomes e caminhos contratuais. São documentados intencionalmente antes da existência de seus runners para que tarefas posteriores possam implementá-los sem alterar o contrato de testes.
