@@ -202,14 +202,14 @@ Usuários mantêm senhas e segredos técnicos dispersos em arquivos, notas, nave
 | SYNC-06 | Resolução e expiração de conflitos | Design | Pending | — |
 | UPDATE-01 | Autenticidade de atualização | Design | Pending | — |
 | UPDATE-02 | Downgrade e falha segura | Design | Pending | — |
-| SEC-01 | Modelo de ameaças e evidências | Design | Em revisão | [threat-model](./threat-model.md) — reaberto por AD-022 (GMP), re-aprovação pendente |
+| SEC-01 | Modelo de ameaças e evidências | Design | Aprovado | [threat-model](./threat-model.md) — re-aprovado em 2026-07-21 (GMP/AD-022, D-05 fechado) |
 | SEC-02 | Redaction e privacidade operacional | Design | Pending | — |
-| SEC-03 | Acesso físico, ataques offline e limites do hardware | Design | Em revisão | [threat-model](./threat-model.md) — reaberto por AD-022 (GMP), re-aprovação pendente |
+| SEC-03 | Acesso físico, ataques offline e limites do hardware | Design | Aprovado | [threat-model](./threat-model.md) — re-aprovado em 2026-07-21 (GMP/AD-022, D-05 fechado) |
 | RESIL-01 | Gravação atômica e recuperação | Design | Pending | — |
 
-**Status values:** Pending → In Design → In Tasks → Implementing → Verified. `Em revisão` = artefato existia como aprovado e foi reaberto por decisão posterior (AD-022), aguardando nova aprovação humana antes de voltar a ser base estável.
+**Status values:** Pending → In Design → In Tasks → Implementing → Verified. `Aprovado` (para SEC-01/SEC-03) = artefato de design revisado e aprovado por humano como base estável; foi reaberto por AD-022 e re-aprovado em 2026-07-21 (D-05 fechado).
 
-**Coverage:** 20 requisitos — 3 em Tasks (SECRET-01…03, mapeados por [secret-management](../secret-management/tasks.md)), 5 em Design (VAULT-01…05, cobertos por [local-sessions](../local-sessions/design.md) + [crypto-format](../crypto-format/design.md)), 2 em revisão (SEC-01, SEC-03, por [threat-model](./threat-model.md) reaberto em AD-022) e 10 pendentes. O mockup visual [ui-screens](../ui-screens/tasks.md) (`Done`) cobre a *superfície de tela* de VAULT/SECRET/SYNC/UPDATE, porém sem lógica, criptografia ou persistência — não conta como implementação de nenhum requisito funcional acima.
+**Coverage:** 20 requisitos — 3 em Tasks (SECRET-01…03, mapeados por [secret-management](../secret-management/tasks.md)), 5 em Design (VAULT-01…05, cobertos por [local-sessions](../local-sessions/design.md) + [crypto-format](../crypto-format/design.md)), 2 aprovados (SEC-01, SEC-03, por [threat-model](./threat-model.md) re-aprovado em 2026-07-21 após AD-022) e 10 pendentes. O mockup visual [ui-screens](../ui-screens/tasks.md) (`Done`) cobre a *superfície de tela* de VAULT/SECRET/SYNC/UPDATE, porém sem lógica, criptografia ou persistência — não conta como implementação de nenhum requisito funcional acima.
 
 ---
 

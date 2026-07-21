@@ -2,7 +2,7 @@
 
 **Gathered:** 2026-07-13
 **Spec:** `.specs/features/secure-vault/spec.md`
-**Status:** Spec canônica; modelo de ameaças em revisão por AD-022; reaprovação humana pendente
+**Status:** Spec canônica; modelo de ameaças re-aprovado em 2026-07-21 (AD-022/GMP, gate D-05 fechado)
 
 > As decisões D-01…D-05 de [ui-screens/context.md](../ui-screens/context.md) substituem as premissas antigas de senha obrigatoriamente independente por sessão. A GMP abre sessões `global`; sessões `own` mantêm senha e isolamento próprios.
 

@@ -1,11 +1,18 @@
 # State
 
-**Last Updated:** 2026-07-19
-**Current Work:** M1 `secret-management` com **Spec, Design e 24 Tasks aprovados** em 2026-07-19; T01–T03 concluídas e próxima tarefa disponível T05 (`SessionAccess`). O core possui agora os módulos da feature e o modelo tipado/validado, com 93 testes Rust verdes. G1 explicita que IPC de produção e E2E dependem de `local-sessions`; modelo, codec e serviços podem avançar antes com um fake determinístico. O store frontend-only não pode virar fonte de verdade. O modelo de ameaças segue em revisão por AD-022; `windows-tauri-proof` está pausada após T14.
+**Last Updated:** 2026-07-21
+**Current Work:** M1 `secret-management` com **core Rust completo** — T01–T13 concluídas e commitadas na branch `feat/secret-crud` (última: T11, `1786f0f`). A próxima tarefa T14 (comandos/DTOs Tauri) está bloqueada pelo **gate externo G1**, que exige o `SessionManager` real de `local-sessions`. Em 2026-07-21 o **modelo de ameaças foi re-aprovado (AD-030, gate D-05 fechado)**, destravando a formalização de `local-sessions` (hoje só `design.md` em Draft; faltam `spec.md` e `tasks.md`). Próximo passo acordado: iniciar `local-sessions` para entregar G1. O store frontend-only não pode virar fonte de verdade; `windows-tauri-proof` segue pausada após T14 (AD-029).
 
 ---
 
 ## Recent Decisions (Last 60 days)
+
+### AD-030: Re-aprovação do modelo de ameaças com GMP — gate D-05 fechado (2026-07-21)
+
+**Decision:** Re-aprovar o [modelo de ameaças](../features/secure-vault/threat-model.md) como base estável de design, incorporando a senha mestra global (GMP) da AD-022. `SEC-01`/`SEC-03` voltam a `Aprovado` e o gate **D-05 é fechado**.
+**Reason:** O conteúdo do documento já refletia integralmente a AD-022 (objetivo 10, A-01/A-11, ADV-02/05, T-AUTH-06/07, C-01/C-13/C-21, PT-03, decisão aberta #11). Faltava apenas a decisão humana de aceitar os riscos residuais. Destrava a formalização de `local-sessions` e, por consequência, o gate G1 de `secret-management`.
+**Trade-off:** Aceita explicitamente dois riscos **Críticos** residuais: (1) **T-AUTH-06** — comprometer a GMP (offline ou keylogger) expõe todas as sessões `global` de uma vez, quebrando o não desbloqueio transitivo; (2) **default `auth_mode = global`** — o isolamento forte (`own`) é opt-out. Três lacunas de precisão documental (T-USER-01 não amplificado para o raio da GMP; dica/aviso da GMP na tela de desbloqueio global; T-AUTH-07 marcado "Mitigado" sem implementação/evidência) foram conscientemente aceitas como menores e não bloqueiam o design.
+**Impact:** Propagado para `secure-vault/{threat-model,spec,context}.md` e `ROADMAP.md`. A auditoria de segurança independente pré-release **permanece obrigatória** (§283) e não é substituída por esta re-aprovação. Próximo: escrever `spec.md` e `tasks.md` de `local-sessions`.
 
 ### AD-029: Pausa da prova Windows/Tauri após o gate de authority (2026-07-19)
 
@@ -57,6 +64,8 @@
 **Impact:** Implementa parcialmente (só frontend) o design de [local-sessions](../features/local-sessions/design.md); o backend Rust/cripto e os comandos Tauri continuam pendentes. Próxima fatia: CRUD de segredos (T09–T11) sobre o mesmo store. `check:frontend` verde (88 testes) e fluxo validado no navegador (criar senha → desbloquear → criar sessão → cofre da sessão → bloquear).
 
 ### AD-022: Senha mestra global + autenticação por sessão (global/própria) (2026-07-15)
+
+**Status:** Modelo de ameaças **re-aprovado em 2026-07-21 (AD-030); gate D-05 fechado.**
 
 **Decision:** Introduzir uma **senha mestra global (GMP)** que trava o app inteiro; desbloqueá-la abre em conjunto todas as sessões `global` (padrão). Cada sessão pode optar por **senha própria** (`auth_mode = own`) e manter isolamento total. Modelo criptográfico canônico e fluxos em [ui-screens/context.md](../features/ui-screens/context.md) (D-04).
 **Reason:** Conveniência de uma senha única no dia a dia, preservando a opção de isolar sessões sensíveis.

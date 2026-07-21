@@ -1,10 +1,10 @@
 # Modelo de Ameaças — Secrets Storage v1
 
-**Status:** Aprovado como base — EM REVISÃO para o modelo de senha mestra global (pendente de re-aprovação). Ver [context.md](../ui-screens/context.md) (D-04/D-05).
+**Status:** Aprovado como base — inclui o modelo de senha mestra global (GMP). Ver [context.md](../ui-screens/context.md) (D-04/D-05).
 
 **Data:** 2026-07-13
 
-**Aprovação:** 2026-07-14 — riscos residuais, limites e protótipos bloqueadores aceitos para orientar o design; a aprovação não declara os controles como implementados. **Reaberta em revisão:** a introdução da senha mestra global (GMP), conforme [context.md](../ui-screens/context.md) (D-04/D-05), reabre pontos anteriormente aprovados (isolamento entre sessões, objetivos, ativos, C-01/C-13 e o raio de exposição de T-AUTH-*) e exige nova aprovação humana antes de voltar a ser base estável de design.
+**Aprovação:** 2026-07-14 — riscos residuais, limites e protótipos bloqueadores aceitos para orientar o design; a aprovação não declara os controles como implementados. **Reaberta em revisão** (AD-022) e **re-aprovada em 2026-07-21 por Enzo:** a introdução da senha mestra global (GMP), conforme [context.md](../ui-screens/context.md) (D-04/D-05), altera pontos antes aprovados (isolamento entre sessões, objetivos, ativos, C-01/C-13/C-21 e o raio de exposição de T-AUTH-*). A re-aprovação aceita explicitamente os riscos Críticos residuais **T-AUTH-06** (comprometer a GMP expõe todas as sessões `global` simultaneamente — quebra do não desbloqueio transitivo) e o **default `auth_mode = global`** (isolamento forte `own` é opt-out). Gate **D-05 fechado**. A aprovação não declara os controles como implementados nem dispensa a auditoria independente pré-release.
 
 **Escopo:** Windows, Tauri 2, core Rust, frontend Vite/Tailwind, múltiplas sessões locais e sincronização por OneDrive ou Google Drive
 
@@ -279,7 +279,7 @@ Um controle só muda para “Mitigado” quando existir implementação e evidê
 - Toda ameaça declarada mitigada precisa mapear para controle, teste e resultado versionado.
 - Mudanças em formato criptográfico, Tauri/IPC, OAuth, sincronização, updater, armazenamento de chaves ou política de bloqueio exigem revisão deste documento.
 - Dependências criptográficas e de segurança devem usar versões suportadas, advisories monitorados e atualização controlada.
-- A introdução da senha mestra global (GMP) é uma mudança do modelo de autenticação e, portanto, exige re-aprovação humana e revisão independente antes que este documento volte a ser base estável de design (ver [context.md](../ui-screens/context.md) D-05). Enquanto o status for "EM REVISÃO", os pontos afetados (isolamento, C-01/C-13/C-21 e T-AUTH-*) não contam como aprovados.
+- A introdução da senha mestra global (GMP) é uma mudança do modelo de autenticação (AD-022) e exigiu re-aprovação humana antes de voltar a ser base estável de design (ver [context.md](../ui-screens/context.md) D-05). **Re-aprovada em 2026-07-21 por Enzo, com D-05 fechado;** os pontos afetados (isolamento, C-01/C-13/C-21 e T-AUTH-*) voltam a contar como aprovados. A auditoria de segurança independente pré-release (§283) permanece obrigatória e não é substituída por esta re-aprovação.
 - Auditoria independente é obrigatória antes da versão estável; este documento não substitui auditoria.
 
 ## 14. Referências primárias

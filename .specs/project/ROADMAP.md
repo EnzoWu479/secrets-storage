@@ -12,13 +12,13 @@
 
 ### Features
 
-**Modelo de ameaças e requisitos de segurança** — REVIEWING (reaberto por AD-022)
+**Modelo de ameaças e requisitos de segurança** — APPROVED (re-aprovado em 2026-07-21 após AD-022)
 
 - Definir ativos, fronteiras de confiança, adversários e ataques previstos.
 - Cobrir memória, disco, logs, clipboard, arquivos temporários, IPC, interface, cadeia de atualização, OAuth e sincronização.
 - Documentar ameaças mitigadas, parcialmente mitigadas, aceitas e fora do modelo.
 - Revisar e aprovar o [modelo de ameaças do v1](../features/secure-vault/threat-model.md) antes de fechar o formato criptográfico.
-- ⚠️ **Reaberto (AD-022, 2026-07-15):** a senha mestra global (GMP) e o `auth_mode = global` alteram isolamento e raio de exposição; SEC-01/SEC-03 voltam a `Em revisão` e o modelo exige **nova aprovação humana** antes de servir de base estável de design.
+- ✅ **Reaberto (AD-022, 2026-07-15) e re-aprovado (2026-07-21):** a senha mestra global (GMP) e o `auth_mode = global` alteram isolamento e raio de exposição. A re-aprovação humana aceitou explicitamente os riscos Críticos residuais T-AUTH-06 (GMP expõe todas as sessões `global`) e o default `global`; SEC-01/SEC-03 voltam a `Aprovado` e o gate D-05 está fechado. Auditoria independente pré-release permanece obrigatória.
 
 **Formato criptográfico versionado** — PLANNED
 
