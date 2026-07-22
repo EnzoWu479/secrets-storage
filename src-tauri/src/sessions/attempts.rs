@@ -125,7 +125,10 @@ mod tests {
     fn falha_agenda_proxima_tentativa() {
         let mut state = AttemptState::new();
         state.record_failure(10_000);
-        assert_eq!(state.check(10_000 + BASE_BACKOFF_MS - 1), Err(SessionError::TooManyAttempts));
+        assert_eq!(
+            state.check(10_000 + BASE_BACKOFF_MS - 1),
+            Err(SessionError::TooManyAttempts)
+        );
         assert!(state.check(10_000 + BASE_BACKOFF_MS).is_ok());
     }
 

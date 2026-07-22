@@ -138,10 +138,7 @@ pub fn normalize_name(name: &str) -> String {
 /// Valida e retorna o nome canônico (aparado). Rejeita vazio, NUL e excesso.
 pub fn validate_name(name: &str) -> Result<String, SessionError> {
     let trimmed = name.trim();
-    if trimmed.is_empty()
-        || trimmed.len() > MAX_SESSION_NAME_BYTES
-        || trimmed.contains('\0')
-    {
+    if trimmed.is_empty() || trimmed.len() > MAX_SESSION_NAME_BYTES || trimmed.contains('\0') {
         return Err(SessionError::InvalidInput);
     }
     Ok(trimmed.to_owned())
@@ -196,9 +193,9 @@ impl Registry {
 
     /// `true` se o nome normalizado já pertence a outra sessão (ignorando `except`).
     pub fn name_taken(&self, name_normalized: &str, except: Option<Uuid>) -> bool {
-        self.sessions.iter().any(|entry| {
-            entry.name_normalized == name_normalized && Some(entry.id) != except
-        })
+        self.sessions
+            .iter()
+            .any(|entry| entry.name_normalized == name_normalized && Some(entry.id) != except)
     }
 
     /// Insere uma entrada validando unicidade de nome e capacidade.
@@ -334,7 +331,10 @@ mod tests {
         reg.insert(a).unwrap();
         reg.insert(entry("Pessoal", AuthMode::Global)).unwrap();
 
-        assert_eq!(reg.rename(id_a, "Pessoal"), Err(SessionError::DuplicateName));
+        assert_eq!(
+            reg.rename(id_a, "Pessoal"),
+            Err(SessionError::DuplicateName)
+        );
         assert!(reg.rename(id_a, "Trabalho").is_ok()); // próprio nome
         assert!(reg.rename(id_a, "Projetos").is_ok());
         assert_eq!(reg.find(id_a).unwrap().name_normalized, "projetos");
