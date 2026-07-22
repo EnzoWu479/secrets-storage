@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-proof-install-canary"
+description = "Enables the proof_install_canary command without any pre-configured scope."
+commands.allow = ["proof_install_canary"]
+
+[[permission]]
+identifier = "deny-proof-install-canary"
+description = "Denies the proof_install_canary command without any pre-configured scope."
+commands.deny = ["proof_install_canary"]

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-proof-status"
+description = "Enables the proof_status command without any pre-configured scope."
+commands.allow = ["proof_status"]
+
+[[permission]]
+identifier = "deny-proof-status"
+description = "Denies the proof_status command without any pre-configured scope."
+commands.deny = ["proof_status"]
