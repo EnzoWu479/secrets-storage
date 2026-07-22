@@ -59,6 +59,8 @@ pub enum SessionError {
     TamperedRegistry,
     #[error("tentativas em excesso; aguarde antes de tentar novamente")]
     TooManyAttempts,
+    #[error("falha de armazenamento local")]
+    Storage,
 }
 
 /// Política de bloqueio de uma sessão. `inactivity_secs = None` representa
